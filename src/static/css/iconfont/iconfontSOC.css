@@ -1,0 +1,59 @@
+@font-face {
+  font-family: 'iconfont';  /* Project id 2798803 */
+    src: url('//at.alicdn.com/t/font_2798803_l1rl2jfiomn.woff2?t=1631104775871') format('woff2'),
+         url('//at.alicdn.com/t/font_2798803_l1rl2jfiomn.woff?t=1631104775871') format('woff'),
+         url('//at.alicdn.com/t/font_2798803_l1rl2jfiomn.ttf?t=1631104775871') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-ico-erweima:before {
+  content: "\e66b";
+}
+
+.icon-youxiang:before {
+  content: "\e668";
+}
+
+.icon-dizhi:before {
+  content: "\e669";
+}
+
+.icon-dianhua:before {
+  content: "\e66a";
+}
+
+.icon-ico-dingdan:before {
+  content: "\e661";
+}
+
+.icon-ico-shezhi:before {
+  content: "\e662";
+}
+
+.icon-ico-huodong:before {
+  content: "\e663";
+}
+
+.icon-ico-gouwuche:before {
+  content: "\e664";
+}
+
+.icon-ico-wodefuli:before {
+  content: "\e665";
+}
+
+.icon-ico-xiaoxitongzhi:before {
+  content: "\e666";
+}
+
+.icon-ico-wodeshoucang:before {
+  content: "\e667";
+}
+
