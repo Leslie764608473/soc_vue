@@ -9,6 +9,7 @@ const register = '/soc/sso/register';
 const smsCode = '/soc/sso/getAuthCode';
 // 登錄
 const login = '/soc/sso/login';
+const loginNot = '/soc/sso/loginNot';
 // 登出
 const logout = '/soc/sso/logout';
 // 刷新refreshToken
@@ -30,5 +31,6 @@ export {
 	refreshToken,
 	verifyTelephone,
 	verifyAccessToken,
-	getOrgList
+	getOrgList,
+	loginNot
 };

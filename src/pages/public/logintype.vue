@@ -70,9 +70,6 @@
 	</view>
 </template>
 <script>
-import LXLogo from '@/static/LX.png';
-	import HBLogo from '@/static/HB.jpg';
-	import SDLogo from '@/static/shandong/logo.jpg';
 	import { mpWechatLogin, wechatH5Login, thirdPartyWechatOpenPlatform, thirdPartyApple } from '@/api/login';
 	import rfProtocolPopup from '@/components/rf-protocol-popup';
 	export default {
@@ -100,15 +97,8 @@ import LXLogo from '@/static/LX.png';
 		onShow() {
 			this.btnLoading = false;
 			let orgLogo =  this.$mStore.getters.messageData.orgLogo;
-			if(orgLogo == "LX") {
-				this.NowLogo = LXLogo;
-			} else if(orgLogo == "SD") {
-				this.NowLogo = SDLogo;
-			} else if(orgLogo == "HB") {
-				this.NowLogo = HBLogo;
-			} else {
-				this.NowLogo = LXLogo;
-			}
+			this.NowLogo = orgLogo;
+			
 			if (uni.getStorageSync('accessToken')) {
 				this.$mRouter.reLaunch({ route: '/pages/index/index' });
 			}

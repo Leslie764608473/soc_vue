@@ -5,7 +5,7 @@
 					scroll-y
 					@scrolltolower="getMoreList()"
 				>
-						<rf-product-list :bottom="0" :showType="1" :dataType="2" :list="dataList" :isList="isList"></rf-product-list>
+						<rf-product-list :bottom="0" :showType="1" :dataType="3" :list="dataList" :isList="isList" style="padding-top: 10rpx;height: 100%;"></rf-product-list>
 
 						<rf-load-more :status="loadingType" v-if="dataList.length > 0"></rf-load-more>
 
@@ -17,11 +17,10 @@
 	</view>
 </template>
 <script>
-
 import rfLoadMore from '@/components/rf-load-more/rf-load-more';
 import moment from '@/common/moment';
 import rfProductList from '@/components/rf-product-list';
-import {productList} from '@/api/product';
+import {getMyOrgList} from '@/api/userInfo.js';
 import {getmemberSignUpActivityList} from '@/api/activity';
 
 export default {
@@ -42,7 +41,8 @@ export default {
 			dataListHD: [],
 			dataParams: {
 				pageNum: 1,
-				pageSize: 10
+				pageSize: 10,
+				mobile:this.$mStore.getters.userObj.username,
 			},
 			tabCurrentIndex: 0,
 			loadingType: 'more',
@@ -105,19 +105,14 @@ export default {
 		async getActivityList(type) {
 			this.loading = true;
 			await this.$http
-				.get(`${getmemberSignUpActivityList}`,this.dataParams)
+				.get(`${getMyOrgList}`,{mobile:this.$mStore.getters.userObj.username})
 				.then(async r => {
 					this.loading = false;
 					if (type === 'refresh') {
 						uni.stopPullDownRefresh();
 					}
-					r.data.data.forEach((item)=>{
-						if((item.cover_pic == "" || item.cover_pic == null) && item.welfareDisplay && item.welfareDisplay.indexOf('src="') != -1) {
-							item.cover_pic = item.welfareDisplay.split('src="')[1].split('" />')[0];
-						}
-					});
-					this.dataList = [...this.dataList, ...r.data.data];
-					this.loadingType = r.data.total === this.dataList.length ? 'nomore' : 'more';
+					this.dataList = [...this.dataList, ...r.data];
+					this.loadingType = r.data.length === this.dataList.length ? 'nomore' : 'more';
 				})
 				.catch(err => {
 					this.errorInfo = err;

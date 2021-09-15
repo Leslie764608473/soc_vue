@@ -448,6 +448,8 @@
 <style lang="scss" scoped>
 .rf-product-detail {
 	background-color: white;
+	height: 100%;
+	min-height: 100vh;
 	.noBm{
 		text-align: center;
 		font-size: 50rpx;

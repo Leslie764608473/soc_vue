@@ -705,6 +705,9 @@
 </style>
 <style lang="scss">
 .rf-product-detail {
+	height: 100%;
+	min-height: 100vh;
+	background-color: white;
 	.back-btn {
 		position: fixed;
 		left: 40upx;

@@ -5,12 +5,12 @@
 			<text class="back-btn iconfont iconzuo" @tap="navBack"></text>
 			<view class="login-top" :class="'bg-' + themeColor.name">
 				<view class="logoBox">
-					<image class="logoImg" :src="NowLogo"></image>
+					<image class="logoImg" :src="messageData.orgLogo"></image>
 					<text class="logoText">{{messageData.orgName}}</text>
 				</view>
 			</view>
 			<view class="login-type-content">
-				<image class="login-bg" :src="loginBg" :style="{height: messageData.orgId == 48 ? '84vw' : '72vw'}"></image>
+				<image class="login-bg" :src="loginBg" :style="{height: messageData.orgId == 48 ? '72vw' : '72vw'}"></image>
 				<view class="main">
 					<!-- <view class="nav-bar">
 						<view
@@ -25,12 +25,12 @@
 					</view> -->
 					<block v-if="tabCurrentIndex === 0">
 						<view class="login-type-form">
-							<view class="input-item" v-if="messageData.orgId == 48" style="border-bottom: 1px solid #D0D0FF;">
+							<!-- <view class="input-item" v-if="messageData.orgId == 48" style="border-bottom: 1px solid #D0D0FF;">
 								<picker @change="bindPickerChangeOrg" :value="orgIndex" rangeKey="name" :range="orgArr">
 									<text class="iconfont iconkuaijiecaidan" :class="'text-' + themeColor.name"></text>
 									<uni-easyinput style="display: inline-block;margin-left: 65rpx;background: white;" disabled :inputBorder="false" type="text" v-model="orgChoseName" placeholder="請選擇要登錄的社團" />
 								</picker>
-							</view>
+							</view> -->
 							<!-- <view class="input-item">
 								<text class="iconfont iconzhanghuffffffpx" :class="'text-' + themeColor.name"></text>
 								<input
@@ -150,9 +150,7 @@
 	</view>
 </template>
 <script>
-	import LXLogo from '@/static/LX.png';
-		import HBLogo from '@/static/HB.jpg';
-		import SDLogo from '@/static/shandong/logo.jpg';
+	
 import { loginByPass, loginBySmsCode, smsCode, authLogin, registerByPass,login,verifyAccessToken } from '@/api/login';
 import moment from '@/common/moment';
 import qs from 'qs'
@@ -208,17 +206,6 @@ export default {
 		};
 	},
 	onShow() {
-		let orgLogo =  this.$mStore.getters.messageData.orgLogo;
-		if(orgLogo == "LX") {
-			this.NowLogo = LXLogo;
-		} else if(orgLogo == "SD") {
-			this.NowLogo = SDLogo;
-		} else if(orgLogo == "HB") {
-			this.NowLogo = HBLogo;
-		} else {
-			this.NowLogo = LXLogo;
-		}
-
 		if (this.$mStore.getters.hasLogin) {
 			this.$mRouter.reLaunch({ route: '/pages/index/index' });
 		}
@@ -313,8 +300,8 @@ export default {
 		},
 		// 返回上一页
 		navBack() {
-			this.$mRouter.reLaunch({ route: '/pages/index/index' });
-			// this.$mRouter.back();/
+			//this.$mRouter.reLaunch({ route: '/pages/index/index' });
+			this.$mRouter.back();
 		},
 		// 统一跳转路由
 		navTo(route) {

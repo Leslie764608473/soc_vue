@@ -5,7 +5,7 @@
 				<uni-forms class="lyqForm" ref="lyqForm" :modelValue="lyqParams" label-width="100" style="width: 100vw;">
 					<uni-forms-item class="registerFormItem" required label="福利領取機構 " >
 						<view style="position: relative;">
-							<view class="clickNoBox" :class="disabledArr.length===serviceNameArr.length?'disabledClass':''" @tap.stop="serviceFn"></view>
+							<view class="clickNoBox" v-if="disabledArr.length===serviceNameArr.length" @tap.stop="serviceFn"></view>
 							<picker @change="bindPickerChange" @tap="serviceNameArr_tap" :value="serviceIndex" range-key="name" :range="serviceNameArr">
 								<uni-easyinput disabled :inputBorder="false" type="text" v-model="lyqParamsSt" placeholder="請選擇福利領取機構" />
 							</picker>
@@ -16,7 +16,7 @@
 					</uni-forms-item>
 					<uni-forms-item class="registerFormItem" required label="領取日期 " >
 						<view style="position: relative;">
-							<view class="clickNoBox" :class="dateFlag?'disabledClass':''" @tap.stop="dateFlagFn"></view>
+							<view class="clickNoBox" v-if="dateFlag" @tap.stop="dateFlagFn"></view>
 							<picker @change="sub_date_change" @tap="sub_date_tap" :value="subDateIndex" range-key="time" :range="sub_date_arr">
 								<uni-easyinput disabled :inputBorder="false" type="text" v-model="lyqParams.sub_date" placeholder="請選擇領取日期" />
 							</picker>
@@ -272,7 +272,7 @@ export default {
 		position: absolute;
 		width: 100%;
 		height: 100%;
-		z-index: 1;
+		z-index: 100;
 	}
 	.disabledClass{
 		z-index: 100;

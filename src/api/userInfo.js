@@ -4,6 +4,7 @@ const memberInfo = '/soc/sso/getCurrentMember';
 const getNotice = '/soc/sso/getNotice';
 const serviceList = '/soc/sso/serviceList';
 const getMessage ='/soc/sso/getMessage';
+const getMyOrgList = '/soc/sso/getMyOrgList';
 
 const updateNickName = '/soc/sso/updateNickName';
 const uploadIcon = '/soc/sso/uploadIcon';
@@ -19,5 +20,6 @@ export {
 	updateNickName,
 	uploadIcon,
 	uploadFileUrl,
-	uploadImgFile
+	uploadImgFile,
+	getMyOrgList
 };

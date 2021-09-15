@@ -1,8 +1,8 @@
 <template>
 	<view class="user">
 		<!--头部-->
-		<view class="user-section">
-			<view class="imgBox" :style="{'background-image':'url('+my_bg+')'}" ></view>
+		<view class="user-section" :class="'bg-' + themeColor.name">
+			<view class="imgBox" :style="{'background-image':'url('+userBg+')'}" ></view>
 			<view :style="{top:(statusBarHeight+10)+'px'}" class="userTitle">個人中心</view>
 			<!--用户信息-->
 			<view class="user-info-box">
@@ -18,54 +18,72 @@
 						<view class="userInfoT" @tap="navTo(userInfo ? '/pages/user/userinfo/userinfo' : 'login')">
 							{{userInfo.memberName || '登錄/註冊'}}
 						</view>
-						<view v-if="orgId == 46" class="userInfoT">{{userInfo.umsMember.memberNum}}</view>
+						<view v-if="userInfo.orgId == 46" class="userInfoT">{{userInfo.umsMember.memberNum}}</view>
 						<view v-else class="userInfoT">{{userInfo.username}}</view>
 					</view>
 				</view>
 				<uni-icons @tap="navTo(userInfo ? '/pages/user/userinfo/userinfo' : 'login')" type="arrowright" color="#ffffff" class="downIcon" size="20"></uni-icons>
 			</view>
 		</view>
-
-
-		<view class="bottomBox">
-			<view class="myBoxItem" @tap="navTo('/pages/user/coupon/coupon')">
-				<image class="item_image" :src="my_fuli"></image>
-				<view class="item_text">
-					<text>我的福利</text>
-					<view class="itemNum" v-if="flNum != 0">{{flNum}}</view>
+		<!-- 个人中心 内容区-->
+		<view
+			class="cover-container"
+			:style="[
+				{
+					transform: coverTransform,
+					transition: coverTransition
+				}
+			]"
+			@touchstart="coverTouchstart"
+			@touchmove="coverTouchmove"
+			@touchend="coverTouchend"
+		>
+			<!--余额 优惠券 积分信息-->
+				<view class="myBoxList">
+					<view class="myBoxItem" @tap="navTo('/pages/user/coupon/coupon')">
+						<image style="width: 50rpx;height: 50rpx;" src="../../static/shandong/fuliIcon.png"></image>
+						<text>我的福利</text>
+						<view class="itemNum" v-if="flNum != 0">{{flNum}}</view>
+						<uni-icons type="arrowright" class="rightIcon" color="#b3b3b3" size="20"></uni-icons>
+					</view>
+					<!-- <view class="myBoxItem" @tap="navTo('/pages/cart/cart')">
+						<image style="width: 50rpx;height: 50rpx;" src="../../static/shandong/gwc.png"></image>
+						<text>購物車</text>
+						<view class="itemNum" v-if="cartNum != 0">{{cartNum}}</view>
+						<uni-icons type="arrowright" class="rightIcon" color="#b3b3b3" size="20"></uni-icons>
+					</view>
+					<view class="myBoxItem" @tap="navTo('/pages/order/order')">
+						<image style="width: 50rpx;height: 50rpx;" src="../../static/shandong/dd.png"></image>
+						<text>訂單</text>
+						<view class="itemNum" v-if="orderNum != 0">{{orderNum}}</view>
+						<uni-icons type="arrowright" class="rightIcon" color="#b3b3b3" size="20"></uni-icons>
+					</view> -->
+					<view class="myBoxItem" @tap="navTo('/pages/activity/index')">
+						<image style="width: 50rpx;height: 50rpx;" src="../../static/shandong/hd.png"></image>
+						<text style="border-bottom: none;">我的活動</text>
+						<view class="itemNum" v-if="activityNum != 0">{{activityNum}}</view>
+						<uni-icons type="arrowright" class="rightIcon" color="#b3b3b3" size="20"></uni-icons>
+					</view>
+					<!-- <view class="myBoxItem" @tap="navTo('/pages/set/set')">
+						<image style="width: 50rpx;height: 50rpx;" src="../../static/shandong/setIcon.png"></image>
+						<text style="border-bottom: none;">設置</text>
+						<uni-icons type="arrowright" class="rightIcon" color="#b3b3b3" size="20"></uni-icons>
+					</view> -->
 				</view>
-			</view>
-			<view class="myBoxItem" style="margin-top: 20rpx;" @tap="navTo('/pages/activity/index')">
-				<image class="item_image" :src="my_huodong"></image>
-				<view class="item_text">
-					<text>我的活動</text>
-					<view class="itemNum" v-if="flNum != 0">{{flNum}}</view>
-				</view>
-			</view>
-			<view class="myBoxItem" style="margin-top: 20rpx;" @tap="navTo('/pages/user/mysoc/index')">
-				<image class="item_image" :src="my_shetuan"></image>
-				<view class="item_text">
-					<text>我的社團</text>
-					<view class="itemNum" v-if="flNum != 0">{{flNum}}</view>
-				</view>
-			</view>
-		</view>
 
-				<!-- <view class="logOutBtn" @tap="toLogout" v-if="hasLogin">
+				<view class="logOutBtn" @tap="toLogout" v-if="hasLogin">
 					<image :src="logoutIcon" style="width: 32rpx;height: 32rpx;vertical-align: middle;margin-right: 10rpx;" mode=""></image>
 					<text style="color: #f75857;vertical-align: middle;">退出登錄</text>
-				</view> -->
+				</view>
 
+		</view>
 
-
+		<!--页面加载动画-->
+		<rfLoading isFullScreen :active="loading"></rfLoading>
 	</view>
 </template>
 <script>
 	import logoutIcon from './icon/logout.png';
-	import my_fuli from './icon/my_fuli.jpg';
-	import my_bg from './icon/my_bg.jpg';
-	import my_huodong from './icon/my_huodong.jpg';
-	import my_shetuan from './icon/my_shetuan.jpg';
 import { footPrintList, memberInfo, notifyUnRreadCount } from '@/api/userInfo';
 import {verifyAccessToken,logout} from '@/api/login.js';
 import listCell from '@/components/rf-list-cell';
@@ -90,6 +108,7 @@ export default {
 			headImg: this.$mAssetsPath.headImg,
 			vipCardBg: this.$mAssetsPath.vipCardBg,
 			arc: this.$mAssetsPath.arc,
+			userBg: this.$mAssetsPath.userBg,
 			coverTransform: 'translateY(0px)',
 			coverTransition: '0s',
 			moving: false,
@@ -98,14 +117,9 @@ export default {
 			loading: true,
 			appName: this.$mSettingConfig.appName,
 			hasLogin: false,
-			orgId: null,
 			currentLanguage: this._i18n.locale === 'zh' ? 'English' : '中文',
 			statusBarHeight: 0,
-			logoutIcon: logoutIcon,
-			my_fuli: my_fuli,
-			my_huodong: my_huodong,
-			my_shetuan: my_shetuan,
-			my_bg: my_bg
+			logoutIcon: logoutIcon
 		};
 	},
 	filters: {
@@ -155,7 +169,7 @@ export default {
 	onShareAppMessage() {
 		return {
 			title: `歡迎來到${this.appName}`,
-			path: '/pages/index/index?orgId=' + this.$mStore.getters.orgId
+			path: '/pages/index/index'
 		};
 	},
 	onLoad() {
@@ -213,7 +227,21 @@ export default {
 			uni.setTabBarItem({ index: 3, text: this._i18n.t('menu.cart') }); */
 			uni.setTabBarItem({ index: 2, text: this._i18n.t('menu.my') });
 		},
-		toLogout() {},
+		toLogout() {
+			uni.showModal({
+				content: '確定要退出登錄嗎？',
+				success: e => {
+					if (e.confirm) {
+						this.$http.post(`${logout}`,{},{params: {orgId : this.userInfo.orgId, username : this.userInfo.username}}).then(() => {
+							this.$mStore.commit('logout');
+							uni.reLaunch({
+								url: '/pages/index/index?orgId='+this.userInfo.orgId
+							});
+						});
+					}
+				}
+			});
+		},
 		...mapMutations(['setNotifyNum', 'setCartNum']),
 		// 分享
     share() {
@@ -230,7 +258,6 @@ export default {
 		// 数据初始化
 		async initData() {
 			this.hasLogin = this.$mStore.getters.hasLogin;
-			this.orgId = this.$mStore.getters.orgId;
 			uni.setTabBarStyle({
 				selectedColor: this.themeColor.color,
 				borderStyle: 'white'
@@ -384,38 +411,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 page {
-	background-color: white;
-}
-.bottomBox{
-	height: calc(100vh - 380rpx);
-	background-color: white;
-	.myBoxItem{
-		margin-top: -310rpx;
-		width: calc(100vw - 50rpx);
-		position: relative;
-		z-index: 10;
-		margin-left: 25rpx;
-		background-color: white;
-		padding: 15rpx;
-		border-radius: 20rpx;
-		.item_image{
-			width: 200rpx;
-			height: 156rpx;
-			border-radius: 20rpx;
-			display: inline-block;
-			vertical-align: middle;
-		}
-		.item_text{
-			display: inline-block;
-			vertical-align: middle;
-			display: inline-block;
-			width: calc(100% - 200rpx);
-			font-size: 32rpx;
-			color: #333333;
-			padding-left: 40rpx;
-			margin-top: -30rpx;
-		}
-	}
+	background-color: $page-color-base;
 }
 .logOutBtn{
 	border-radius: 20rpx;
@@ -444,7 +440,7 @@ page {
 	}
 .user {
 	.user-section {
-		height: 690rpx;
+		height: 420upx;
 		padding: 100upx 30upx 0;
 		position: relative;
 		background-color: #0081ff;
@@ -488,7 +484,6 @@ page {
 					overflow: hidden;
 					text-overflow: ellipsis;
 					white-space: nowrap;
-					color: white;
 				}
 				.username {
 					font-size: $font-lg + 6upx;
@@ -511,6 +506,230 @@ page {
 
 	}
 
+	.cover-container {
+		margin-top: -150upx;
+		padding: 0 30upx 20upx;
+		position: relative;
+		//background-color: #0081ff;//$page-color-base;
+		background: none;
+		.arc {
+			position: absolute;
+			left: 0;
+			top: -34upx;
+			width: 100%;
+			height: 36upx;
+		}
+
+		.promotion-center {
+			background: #fff;
+			margin-bottom: 20upx;
+			/*分类列表*/
+			.category-list {
+				width: 100%;
+				padding: 0 0 30upx 0;
+				border-bottom: solid 2upx #f6f6f6;
+				display: flex;
+				flex-wrap: wrap;
+				.category {
+					width: 33.3%;
+					margin-top: 50upx;
+					display: flex;
+					justify-content: center;
+					flex-wrap: wrap;
+					.img {
+						width: 100%;
+						display: flex;
+						justify-content: center;
+
+						.iconfont {
+							font-size: $font-lg + 24upx;
+						}
+					}
+
+					.text {
+						width: 100%;
+						display: flex;
+						justify-content: center;
+						font-size: 24upx;
+						color: #3c3c3c;
+					}
+					.share-btn {
+						height: 142upx;
+						text-align: left;
+						background: none;
+						padding: 0;
+						margin: 0;
+					}
+
+					.share-btn:after {
+						border: none;
+						border-radius: none;
+					}
+				}
+			}
+		}
+
+		.tj-sction {
+			@extend %section;
+			display: flex;
+
+			.tj-item {
+				@extend %flex-center;
+				flex: 1;
+				flex-direction: column;
+				margin: 30upx 0;
+				font-size: $font-sm;
+				color: #75787d;
+				/*border-right: 2upx solid rgba(0, 0, 0, 0.2);*/
+			}
+
+			/*.tj-item:last-child {*/
+			/*border-right: none;*/
+			/*}*/
+			.num {
+				font-size: $font-base;
+			}
+
+			.red {
+				color: $base-color;
+			}
+		}
+
+		.myBoxList{
+			border-radius: 20rpx;
+			padding: 10rpx 0 10rpx 20rpx;
+			background-color: white;
+			position: relative;
+			top: 100rpx;
+			.myBoxItem{
+				width: 100%;
+				height: 100rpx;
+				line-height: 100rpx;
+				position: relative;
+				image{
+					display: inline-block;
+					vertical-align: middle;
+				}
+				text{
+					display: inline-block;
+					width: calc(100% - 27px - 20rpx);
+					border-bottom: 1px solid #d9d9d9;
+					margin-left: 20rpx;
+					padding-left: 5rpx;
+				}
+				.itemNum{
+					position: absolute;
+					top: 30rpx;
+					right: 66rpx;
+					height: 40rpx;
+					width: 40rpx;
+					background-color: #f75756;
+					color: white;
+					line-height: 40rpx;
+					border-radius: 50%;
+					font-size: 28rpx;
+					text-align: center;
+				}
+				.rightIcon{
+					position: absolute;
+					top: 0;
+					right: 10rpx;
+				}
+			}
+		}
+
+		.order-section {
+			@extend %section;
+			padding: 28upx 0;
+
+			.order-item {
+				@extend %flex-center;
+				width: 120upx;
+				height: 120upx;
+				border-radius: 10upx;
+				font-size: $font-sm;
+				color: $font-color-dark;
+				position: relative;
+			}
+
+			.badge {
+				position: absolute;
+				top: 0;
+				right: 4upx;
+			}
+
+			.iconfont {
+				font-size: 48upx;
+			}
+
+			.icon-shouhoutuikuan {
+				font-size: 44upx;
+			}
+		}
+
+		.history-section {
+			background: #fff;
+			margin-bottom: $spacing-sm;
+			.h-list-history {
+				margin: 0;
+				border-radius: 10upx;
+				white-space: nowrap;
+				background-color: $page-color-base;
+				.h-item-history {
+					background-color: $color-white;
+					display: inline-block;
+					font-size: $font-sm;
+					color: $font-color-base;
+					width: 180upx;
+					margin: $spacing-sm $spacing-sm 0 0;
+					border-radius: 10upx;
+					position: relative;
+					top: 0;
+					overflow: hidden;
+					.h-item-img {
+						width: 180%;
+						height: 200upx;
+						border-top-left-radius: 12upx;
+						border-top-right-radius: 12upx;
+						border-bottom: 1upx solid rgba(0, 0, 0, 0.01);
+					}
+					.tag {
+						position: absolute;
+						border-top-left-radius: 12upx;
+						left: 0;
+						right: 0;
+						width: 60upx;
+						height: 60upx;
+					}
+					.h-item-text {
+						font-size: $font-sm;
+						margin: $spacing-sm 4upx;
+					}
+				}
+			}
+			.no-foot-print {
+				text-align: center;
+				padding: 48upx 0;
+
+				.no-foot-print-icon {
+					font-size: $font-lg + 2upx;
+					margin-right: 10upx;
+				}
+			}
+			.share-btn {
+				height: 102upx;
+				text-align: left;
+				background: none;
+				padding: 0;
+				margin: 0;
+			}
+
+			.share-btn:after {
+				border: none;
+				border-radius: none;
+			}
+		}
+	}
 }
 %flex-center {
 	display: flex;

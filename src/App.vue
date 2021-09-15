@@ -36,19 +36,6 @@ export default {
 			if (token) {
 				await this.handleVerifyAccessToken(token);
 			}
-			if (this.$mStore.getters.hasLogin) {
-				// 初始化购物车数量
-				this.setCartNum(uni.getStorageSync('cartNum') || 0);
-				this.setNotifyNum(uni.getStorageSync('notifyNum') || 0);
-				// #ifdef APP-PLUS
-				const info = plus.push.getClientInfo();
-				// #endif
-			}
-			// #ifdef H5
-			if (this.$mPayment.isWechat()) {
-				await this.$mPayment.wxConfigH5(window.location.href);
-			}
-			// #endif
 		},
 		// 初始化系统信息
 		initSystemInfo() {
@@ -79,7 +66,7 @@ export default {
 		getOrgListFn() {
 			this.$http.get(getOrgList).then((r) => {
 				if(r.code == 200) {
-					this.$mStore.commit('setOrgList',r);
+					this.$mStore.commit('setOrgList',r.data);
 				}
 			});
 		},
@@ -87,9 +74,6 @@ export default {
 		async handleVerifyAccessToken (token) {
 			  await this.$http.get(verifyAccessToken).then((r) => {
 						if(r.status) {
-							if(r.msg.orgId != this.$mStore.getters.orgId){
-								this.$mStore.commit('setOrgId',r.msg.orgId);
-							}
 							this.$mStore.commit('login',{
 								Token: token,
 								UserInfo: r.msg

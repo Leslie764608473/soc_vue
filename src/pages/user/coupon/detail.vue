@@ -1,5 +1,5 @@
 <template>
-	<view class="coupon-detail" style="background-color: white;">
+	<view class="coupon-detail" style="background-color: white;height: 100%;min-height: 100vh;">
 		<image style="width: 95vw;margin-left: 2.5vw;border-radius: 15rpx;" v-if="couponData.product" :src="couponData.product.pic"></image>
 		<!-- <view style="width: 90vw;margin: 50rpx auto;">
 		    <tki-barcode :opations="{
@@ -9,18 +9,19 @@
 		</view> -->
 		<view class="detailTitle">{{couponData.product.detailTitle}}</view>
 		<mp-html v-if="couponData.product" class="productContent" container-style="color:#333333;padding: 0 5vw;font-size: 30rpx" :content="couponData.product.detailDesc.trim()" />
-		<view class="yyInfoBox">
+		<view class="yyInfoBox" v-if="couponData.product">
 			<!-- <view>您的預約信息：</view> -->
 			<!-- <view>会员编号：{{userObj.umsMember.memberNum}}</view> -->
 			<view><text class="titleName">姓名</text>{{userObj.umsMember.nameZh}}</view>
 			<view><text class="titleName">电话</text>{{userObj.umsMember.mobile}}</view>
 			<view><text class="titleName">領取數量</text><text style="font-weight: bold;color: red;">{{couponData.receiveOrder.getCount}}</text></view>
 			<view><text class="titleName">領取服務處</text><text class="longText">{{couponData.serviceCenter.name+" ( "+couponData.serviceCenter.address+" ) "}}</text></view>
-			<view v-if="couponData.product.receiveType != 1"><text class="titleName">領取時間</text><uni-dateformat format="yyyy年MM月dd日" :date="couponData.product.promotionEndTime"></uni-dateformat></view>
-			<view v-if="couponData.product.receiveType == 1"><text class="titleName">截止時間</text><uni-dateformat format="yyyy年MM月dd日" :date="couponData.receiveOrder.subDate"></uni-dateformat></view>
+
+			<view v-if="couponData.product.receiveType != 1"><text class="titleName">領取時間</text><text>{{couponData.product.promotionEndTime | time}}</text></view>
+			<view v-if="couponData.product.receiveType == 1"><text class="titleName">截止時間</text><text></text>{{couponData.receiveOrder.subDate | time}}</view>
 		</view>
 
-		<button @tap="shareEr = 'show'" type="default" style="background-color: #0f7df7;color: white;width: 50vw;">展示二維碼</button>
+		<!-- <button @tap="shareEr = 'show'" type="default" style="background-color: #0f7df7;color: white;width: 50vw;">展示二維碼</button> -->
 
 		<view class="detail-desc" style="padding: 0 35rpx 40rpx;">
 			<!-- <view class="d-header">
@@ -34,12 +35,12 @@
 			<rf-parser :html="couponData.product.note" lazy-load></rf-parser>
 		</view>
 
-		<view style="width: 90vw;margin:30rpx auto;">
-			<button v-if="receive_btn_name != '已領取' && receive_btn_name != '已過期'" type="primary" @tap="to_receive">{{receive_btn_name}}</button>
+		<view style="width: 90vw;margin:30rpx auto 0 auto;padding-bottom: 30rpx;">
+			<button style="background-color: #0f7df7;color: white;width: 50vw;" v-if="receive_btn_name != '已領取' && receive_btn_name != '已過期'" type="primary" @tap="to_receive">{{receive_btn_name}}</button>
 
-			<button v-if="receive_btn_name == '已領取' || receive_btn_name == '已過期'" style="background-color: #a1b17f;" @tap="to_receive" type="primary">{{receive_btn_name}}</button>
+			<button v-if="receive_btn_name == '已領取' || receive_btn_name == '已過期'" style="background-color: #a1b17f;width: 50vw;" @tap="to_receive" type="primary">{{receive_btn_name}}</button>
 
-			<button v-if="receive_btn_name!='已領取' && receive_btn_name!='已過期' && couponData.product.receiveType != 1" @tap="delete_lyq" style="background: none;color: gray;width: auto;margin: 20px auto;text-decoration: underline;" type="primary">取消領取</button>
+			<button v-if="receive_btn_name!='已領取' && receive_btn_name!='已過期' && couponData.product.receiveType != 1" @tap="delete_lyq" style="background: none;color: gray;width: 50vw;margin: 20px auto;text-decoration: underline;" type="primary">取消領取</button>
 		</view>
 
 		<!--加载动画-->
@@ -118,7 +119,7 @@ export default {
 	},
 	filters: {
 		time(val) {
-			return moment(val * 1000).format('YYYY-MM-DD');
+			return moment(val).format('YYYY年MM月DD日');
 		},
 		timeFull(val) {
 			return moment(val * 1000).format('YYYY-MM-DD HH:mm:ss');

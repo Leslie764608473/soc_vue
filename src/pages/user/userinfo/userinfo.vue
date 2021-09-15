@@ -36,6 +36,7 @@
 				<view class="cell-tip">
 					<input
 						type="text"
+						@blur="handleUpdateInfo()"
 						style="text-align: right;"
 						v-model="profileInfo.nickname"
 						placeholder="請輸入您的暱稱"
@@ -48,6 +49,7 @@
 				<view class="cell-tip">
 					<input
 						type="text"
+						@blur="handleUpdateInfo()"
 						style="text-align: right;"
 						v-model="profileInfo.nameZh"
 						placeholder="請輸入您的姓名"
@@ -77,11 +79,17 @@
 				</view>
 				<text class="cell-more iconfont iconyou"></text>
 			</view>
+
+			<view class="logOutBtn" @tap="toLogout">
+				<image :src="logoutIcon" style="width: 32rpx;height: 32rpx;vertical-align: middle;margin-right: 10rpx;" mode=""></image>
+				<text style="color: #f75857;vertical-align: middle;">退出登錄</text>
+			</view>
+
 		</view>
 
-		<view :loading="btnLoading" @tap="toUpdateInfo" class="list-cell b-b" style="border-radius:20rpx; width: calc(100% - 50rpx);margin-left: 25rpx;">
+		<!-- <view :loading="btnLoading" @tap="toUpdateInfo" class="list-cell b-b" style="border-radius:20rpx; width: calc(100% - 50rpx);margin-left: 25rpx;">
 			<text style="color:#0081ff;word-spacing: 50rpx;font-weight: 500;">確   定</text>
-		</view>
+		</view> -->
 
 		<!--加载动画-->
 		<rfLoading isFullScreen :active="loading"></rfLoading>
@@ -95,21 +103,17 @@
 </template>
 
 <script>
-/**
- * @des 修改用户信息
- *
- * @author stav stavyan@qq.com
- * @date 2020-01-10 14:28
- * @copyright 2019
- */
+import logoutIcon from './icon/logout.png';
 import { memberInfo, memberUpdate, uploadImage,updateNickName,uploadIcon,uploadFileUrl,uploadImgFile } from '@/api/userInfo';
 import avatar from '@/components/rf-avatar/rf-avatar';
 import moment from '@/common/moment';
+import {logout} from '@/api/login.js';
 
 export default {
 	components: { avatar },
 	data() {
 		return {
+			logoutIcon: logoutIcon,
 			loadProgress: 0,
 			CustomBar: this.CustomBar,
 			profileInfo: {},
@@ -127,6 +131,7 @@ export default {
 					name: '女'
 				}
 			],
+			userInfo: this.$mStore.getters.userObj,
 			genderName: 0,
 			date: moment().format('YYYY-MM-DD'),
 			token: null,
@@ -137,6 +142,13 @@ export default {
 		};
 	},
 	onLoad() {
+		uni.onKeyboardHeightChange(res => {
+			if(res.height == 0){
+
+			}
+		})
+
+
 		this.initData();
 	},
 	methods: {
@@ -153,9 +165,25 @@ export default {
 				}
 			});
 		},
+		toLogout() {
+			uni.showModal({
+				content: '確定要退出登錄嗎？',
+				success: e => {
+					if (e.confirm) {
+						this.$http.post(`${logout}`,{},{params: {orgId : this.userInfo.orgId, username : this.userInfo.username}}).then(() => {
+							this.$mStore.commit('logout');
+							uni.reLaunch({
+								url: '/pages/index/index'
+							});
+						});
+					}
+				}
+			});
+		},
 		bindPickerChange(e) {
 			this.genderName = e.target.value;
 			this.profileInfo.gender = this.genders[parseFloat(e.target.value)].name;
+			this.handleUpdateInfo();
 		},
 		// 上传头像
 		handleUploadFile(data) {
@@ -173,6 +201,7 @@ export default {
 					'Authorization' : uni.getStorageSync('accessToken')
 				},
 				success:  (fileResTwo)=> {
+					this.profileInfo.icon = JSON.parse(fileResTwo.data).url;
 					_this.$http.post(uploadIcon,{},{
 									params: {
 										id: this.profileInfo.id,
@@ -191,10 +220,12 @@ export default {
 		// 监听日期更改
 		bindDateChange(e) {
 			this.date = e.target.value;
+			this.handleUpdateInfo();
 		},
 		// 监听性别更改
 		handleGenderChange(e) {
 			this.profileInfo.gender = e.detail.value;
+			this.handleUpdateInfo();
 		},
 		// 数据初始化
 		initData() {
@@ -223,11 +254,11 @@ export default {
 		// 更新用户信息
 		async handleUpdateInfo() {
 			this.profileInfo.birthdayStr = this.date;
-			this.btnLoading = true;
+		/* 	this.btnLoading = true;
 			this.loadProgress = this.loadProgress + 6;
 			const timer = setInterval(() => {
 				this.loadProgress = this.loadProgress + 6;
-			}, 50);
+			}, 50); */
 			await this.$http
 				.post(`${updateNickName}?id=${this.profileInfo.id}`,{}, {
 					params: {
@@ -240,15 +271,21 @@ export default {
 					}
 				})
 				.then(() => {
-					clearInterval(timer);
+					/* let obj = _this.$mStore.getters.userObj;
+					obj.memberName = this.profileInfo.nameZh;
+					obj.umsMember.nameZh = this.profileInfo.nameZh;
+					_this.$mStore.commit('setUserObj',obj); */
+					
+					
+					/* clearInterval(timer);
 					this.loadProgress = 0;
 					this.$mHelper.toast('恭喜您, 個人資料修改成功!');
 					setTimeout(() => {
 						this.$mRouter.back();
-					}, 1 * 1000);
+					}, 1 * 1000); */
 				})
 				.catch(() => {
-					this.btnLoading = false;
+					//this.btnLoading = false;
 				});
 		}
 	}
@@ -258,6 +295,15 @@ export default {
 <style lang="scss" scoped>
 page {
 	background-color: $color-white;
+}
+.logOutBtn{
+	border-radius: 20rpx;
+	    padding: 20rpx 0;
+	    background-color: white;
+	    position: relative;
+	    top: 30rpx;
+	    text-align: center;
+	    font-weight: 500;
 }
 .list-cell{
 	align-items: center;

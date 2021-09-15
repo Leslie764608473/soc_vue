@@ -223,10 +223,6 @@
 	</view>
 </template>
 <script>
-	import LXLogo from '@/static/LX.png';
-	import HBLogo from '@/static/HB.jpg';
-	import SDLogo from '@/static/shandong/logo.jpg';
-
 	var _self;
 	var content = null;
 	var touchs = [];
@@ -356,15 +352,9 @@ export default {
 	created() {
 		this.registerOrg_id = uni.getStorageSync('registerOrg_id');
 		this.orgChoseName = uni.getStorageSync('orgChoseName');
-		if(parseInt(this.registerOrg_id) == 48) {
-			this.NowLogo = LXLogo;
-		} else if(parseInt(this.registerOrg_id) == 46) {
-			this.NowLogo = SDLogo;
-		} else if(parseInt(this.registerOrg_id) == 47) {
-			this.NowLogo = HBLogo;
-		} else {
-			this.NowLogo = LXLogo;
-		}
+		
+		let orgLogo =  this.$mStore.getters.messageData.orgLogo;
+		this.NowLogo = orgLogo;
 
 		this.initAddress();
 		this.getRegisterFn();

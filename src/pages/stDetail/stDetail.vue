@@ -7,7 +7,7 @@
 			</view>
 		</view>
 		<view class="noteBox">
-			<uni-icons type="sound" color="#0f7df7"></uni-icons>
+			<!-- <uni-icons type="sound" color="#0f7df7"></uni-icons> -->
 			<view class="detailTitle" style="display: inline-block;margin-left: 10rpx;font-size: 25rpx;">通知公告</view>
 			<view style="padding: 10rpx 0;">{{nodeDetail.cotent}}</view>
 			<view style="text-align: right;">
@@ -92,10 +92,6 @@
 	</view>
 </template>
 <script>
-	import LXLogo from '@/static/LX.png';
-	import HBLogo from '@/static/HB.jpg';
-	import SDLogo from '@/static/shandong/logo.jpg';
-
 	import {getNotice,serviceList} from '@/api/userInfo.js';
 import moment from '@/common/moment';
 	export default {
@@ -123,15 +119,8 @@ import moment from '@/common/moment';
 		},
 		onLoad() {
 			let orgLogo =  this.$mStore.getters.messageData.orgLogo;
-			if(orgLogo == "LX") {
-				this.NowLogo = LXLogo;
-			} else if(orgLogo == "SD") {
-				this.NowLogo = SDLogo;
-			} else if(orgLogo == "HB") {
-				this.NowLogo = HBLogo;
-			} else {
-				this.NowLogo = LXLogo;
-			}
+			this.NowLogo = orgLogo;
+			
 			this.getNoticeFn();
 		},
 		methods: {

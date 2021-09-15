@@ -3,7 +3,7 @@
 		<view class="rf-product-list-container">
 			<block v-for="(item, index) in list" :key="index">
 				<!--资讯-->
-				<view v-if="dataType == 0 && index%4 != 0" class="rf-product-item rf-product-flex-list"
+				<view v-if="dataType == 0 && index%4 != 0" class="rf-product-item rf-product-itemHome rf-product-flex-list"
 				 hover-class="hover" :hover-start-time="150" @tap.stop="navTo(`/pages/product/article?id=${item.id}`)">
 					<view class="rf-pro-content" :class="item.coverPic?'':'rf-pro-content-noImg'">
 						<view class="rf-pro-tit">{{ item.title }}</view>
@@ -16,7 +16,7 @@
 						<view class="imgBox" :style="{'background-image':'url('+item.coverPic+')'}" ></view>
 					</view>
 				</view>
-				<view v-if="dataType == 0 && index%4 == 0" class="rf-product-item"
+				<view v-if="dataType == 0 && index%4 == 0" class="rf-product-item rf-product-itemHome"
 				 hover-class="hover" :hover-start-time="150" @tap.stop="navTo(`/pages/product/article?id=${item.id}`)">
 					<view class="rf-pro-content rf-pro-content-big" :class="item.coverPic?'':'rf-pro-content-noImg'">
 						<view class="rf-pro-tit">{{ item.title }}</view>
@@ -33,7 +33,7 @@
 				<!--商品列表-->
 				<view
 					v-if="dataType == 1"
-					class="rf-product-item rf-product-flex-list rf-product-itemFl"
+					class="rf-product-item rf-product-itemHome rf-product-flex-list rf-product-itemFl"
 					@tap.stop="navTo(`/pages/product/product?id=${item.id}`)"
 					hover-class="hover"
 					:hover-start-time="150"
@@ -87,6 +87,22 @@
 					</view>
 				</view>
 				<!--活動列表-->
+				<!--社團列表-->
+				<view
+					v-if="dataType == 3"
+					class="rf-product-item rf-product-flex-list rf-product-itemFl"
+					@tap.stop="socNavTo(item.id)"
+					hover-class="hover"
+					:hover-start-time="150"
+				>
+					<view class="rf-product-image-wrapper-soc">
+						<image  :src="item.logo" class="logoImg"></image>
+					</view>
+					<view class="rf-pro-content-soc">
+						<view class="socName">{{item.name}}</view>
+					</view>
+				</view>
+				<!--社團列表-->
 			</block>
 		</view>
 
@@ -95,6 +111,7 @@
 <script>
 
 import { productDetail, cartItemCount, cartItemCreate } from '@/api/product';
+import {loginNot,verifyAccessToken} from '@/api/login';
 import rfAttrContent from '@/components/rf-attr-content';
 import moment from '@/common/moment';
 import $mAssetsPath from '@/config/assets.config';
@@ -141,7 +158,8 @@ export default {
       moneySymbol: this.moneySymbol,
 			productDetail: {},
 			errorImage: this.$mAssetsPath.errorImage,
-			hasLogin : this.$mStore.getters.hasLogin
+			hasLogin : this.$mStore.getters.hasLogin,
+			userInfo: this.$mStore.getters.userObj,
 		};
 	},
 	filters: {
@@ -185,10 +203,58 @@ export default {
 		}
 	},
 	methods: {
-    ...mapMutations(['setCartNum']),
 		// 跳转详情
 		navTo(route) {
+			console.log(route)
 			this.$mRouter.push({ route });
+		},
+		toLogin(orgChoseId) {
+			let uuid = this.getUuid();
+			let login_param = {};
+			login_param = {
+				username: this.userInfo.umsMember.mobile,
+				orgId: orgChoseId,
+				onlyUuid: uuid
+			}
+			this.$http
+				.post(loginNot,{},{params:login_param})
+				.then(res => {
+					if(res.code == 200) {
+						uni.setStorageSync('accessToken', res.data.tokenHead+""+res.data.token);
+						uni.setStorageSync('refreshToken',res.data.tokenHead+""+res.data.token);
+						this.$http.get(verifyAccessToken).then((r) => {
+								this.$mStore.commit('login',{
+									Token: res.data.tokenHead+""+res.data.token,
+									UserInfo: r.msg
+								});
+
+								setTimeout(()=>{
+									this.$mStore.commit('setOrgId',orgChoseId);
+									this.$mRouter.reLaunch({ route: `/pages/index/index?orgId=${orgChoseId}` });
+								},500);
+
+						})
+					}
+				}).catch(() => {
+
+				});
+		},
+		getUuid() {
+			 	var s = [];
+		    var hexDigits = "0123456789abcdef";
+		    for (var i = 0; i < 36; i++) {
+		        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+		    }
+		    s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+		    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+		    s[8] = s[13] = s[18] = s[23] = "-";
+		    var uuid = s.join("");
+		    return uuid;
+		},
+
+		socNavTo(id) {
+			//this.$mRouter.reLaunch({ route: `/pages/index/index?orgId=${id}` });
+			this.toLogin(id);
 		},
 		activityNavTo(id,status) {
 			if(this.showType == 0) {
@@ -202,11 +268,37 @@ export default {
 </script>
 <style scoped lang="scss">
 	.hover{
-		background-color: #f0f2f2 !important;
+		background-color: #f0f0f0 !important;
 	}
+	.rf-product-list {
+		background-color: #f0f2f2 !important;
+		padding: 0;
+	}
+
 	.rf-product-image-wrapper{
 		width: 250rpx;
 		height: 166.667rpx;
+	}
+	.rf-product-image-wrapper-soc{
+		width: 150rpx !important;
+		height: 150rpx !important;
+		.logoImg{
+			width: 100%;
+			height: 100%;
+			border-radius: 50%;
+		}
+	}
+	.rf-pro-content-soc{
+		width: calc(100% - 150rpx);
+		padding: 0;
+		.socName{
+			font-size: 33rpx;
+			color: #333333;
+			font-weight: 500;
+			height: 150rpx;
+			line-height: 150rpx;
+			padding-left: 30rpx;
+		}
 	}
 	.rf-pro-content{
 		width: calc(100% - 250rpx);
@@ -276,6 +368,11 @@ export default {
 	.rf-product-item{
 		padding: 30rpx 20rpx;
 		margin-bottom: 25rpx !important;
+		&.rf-product-itemHome{
+			margin-top: 0 !important;
+			margin-bottom: 25rpx !important;
+			background-color: white !important;
+		}
 		.rf-pro-content{
 			justify-content: flex-start !important;
 		}

@@ -40,8 +40,10 @@
 										<view class="coupon_title" style="width: calc(100% - 50rpx);">{{item.product[0].subTitle}}</view>
 										<view class="coupon_bottom">
 											<text>領用有效期：</text>
-											<uni-dateformat v-if="item.product[0].receiveType == 1" format="yyyy年MM月dd日" :date="item.product[0].promotionEndTime"></uni-dateformat>
-											<uni-dateformat v-if="item.product[0].receiveType != 1" format="yyyy年MM月dd日" :date="item.receive.subDate"></uni-dateformat>
+											<text v-if="item.product[0].receiveType == 1">{{item.product[0].promotionEndTime | time}}</text>
+											<text v-if="item.product[0].receiveType != 1">{{item.receive.subDate | time}}</text>
+											<!-- <uni-dateformat v-if="item.product[0].receiveType == 1" format="yyyy年MM月dd日" :date="item.product[0].promotionEndTime"></uni-dateformat>
+											<uni-dateformat v-if="item.product[0].receiveType != 1" format="yyyy年MM月dd日" :date="item.receive.subDate"></uni-dateformat> -->
 											<image style="width: 40rpx;height: 40rpx;float: right;" src="../../../static/shandong/erCodeIcon.png" mode=""></image>
 										</view>
 									</view>
@@ -106,7 +108,7 @@ export default {
 	filters: {
 		// 格式化时间
 		time(val) {
-			return moment(val * 1000).format('YYYY-MM-DD');
+			return moment(val).format('YYYY年MM月DD日');
 		},
 		// 格式化时间
 		timeFull(val) {

@@ -88,6 +88,7 @@ const store = new Vuex.Store({
 				color: '#0081ff',
 				tabList: [
 					'/static/tab/home_select.png',
+					//'/static/SOC_logo.png',
 					'/static/tab/my_select.png',
 				]
 			}

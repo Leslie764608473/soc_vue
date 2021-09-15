@@ -10,16 +10,16 @@
 				</view>
 			</view>
 			<view class="login-type-content">
-				<image class="login-bg" :src="loginBg" :style="{height: messageData.orgId == 48 ? '100vw' : '83vw'}"></image>
+				<image class="login-bg" :src="loginBg" :style="{height: messageData.orgId == 48 ? '83vw' : '83vw'}"></image>
 				<view class="main">
 					<block v-if="tabCurrentIndex === 0">
 						<view class="login-type-form">
-							<view class="input-item" v-if="messageData.orgId == 48" style="border-bottom: 1px solid #D0D0FF;">
+							<!-- <view class="input-item" v-if="messageData.orgId == 48" style="border-bottom: 1px solid #D0D0FF;">
 								<picker @change="bindPickerChangeOrg" :value="orgIndex" rangeKey="name" :range="orgArr">
 									<text class="iconfont iconkuaijiecaidan" :class="'text-' + themeColor.name"></text>
 									<uni-easyinput style="display: inline-block;margin-left: 80rpx;background: white;" disabled :inputBorder="false" type="text" v-model="orgChoseName" placeholder="請選擇要註冊的社團" />
 								</picker>
-							</view>
+							</view> -->
 							<view class="input-item" style="border-bottom: 1px solid #D0D0FF;">
 								<picker @change="bindPickerChange" :value="serviceIndex" :range="serviceNameArr">
 									<text class="iconfont iconkuaijiecaidan" :class="'text-' + themeColor.name"></text>
@@ -85,9 +85,6 @@
 	</view>
 </template>
 <script>
-	import LXLogo from '@/static/LX.png';
-		import HBLogo from '@/static/HB.jpg';
-		import SDLogo from '@/static/shandong/logo.jpg';
 import { loginByPass, loginBySmsCode, smsCode, authLogin, registerByPass,login,verifyAccessToken,serviceList,verifyTelephone } from '@/api/login';
 import moment from '@/common/moment';
 import selectBox from '@/components/select-box/select-box.vue'
@@ -108,7 +105,7 @@ export default {
 			], */
 			orgArr: this.$mStore.getters.orgList,
 			orgIndex: 0,
-			orgChoseName: "連心1.0",
+			orgChoseName: "",
 			orgChoseId: this.$mStore.getters.orgId,
 			serviceArr: [],
 			serviceNameArr: [],
@@ -153,15 +150,7 @@ export default {
 	},
 	onShow() {
 		let orgLogo =  this.$mStore.getters.messageData.orgLogo;
-		if(orgLogo == "LX") {
-			this.NowLogo = LXLogo;
-		} else if(orgLogo == "SD") {
-			this.NowLogo = SDLogo;
-		} else if(orgLogo == "HB") {
-			this.NowLogo = HBLogo;
-		} else {
-			this.NowLogo = LXLogo;
-		}
+		this.NowLogo = orgLogo;
 
 		if (this.$mStore.getters.hasLogin) {
 			this.$mRouter.reLaunch({ route: '/pages/index/index' });
@@ -196,7 +185,7 @@ export default {
 				this.serviceNameArr = [];
 				res.data.forEach((item)=>{
 					let name = item.name;
-					if(item.name == "香港山東社團总会") {
+					if(item.name == "香港山東社團总会" || item.name == "香港山東社團總會") {
 						name += "直屬會員（非現有屬會會員）";
 					}
 					this.serviceNameArr.push(name);
@@ -292,8 +281,8 @@ export default {
 		},
 		// 返回上一页
 		navBack() {
-			this.$mRouter.reLaunch({ route: '/pages/index/index' });
-			// this.$mRouter.back();/
+			//this.$mRouter.reLaunch({ route: '/pages/index/index?orgId='+this.$mStore.getters.orgId });
+			this.$mRouter.back();
 		},
 		// 统一跳转路由
 		navTo(route) {
@@ -301,7 +290,7 @@ export default {
 		},
 		// 返回主页
 		toHome() {
-			this.$mRouter.reLaunch({ route: '/pages/index/index' });
+			this.$mRouter.reLaunch({ route: '/pages/index/index?orgId='+this.$mStore.getters.orgId  });
 		},
 		// 提交表单
 		async toLogin() {
