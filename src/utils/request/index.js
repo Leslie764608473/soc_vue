@@ -31,7 +31,15 @@ let requests = [];
 http.interceptor.request(
 	config => {
 		/* 请求之前拦截器 */
-		config.header['Authorization'] = uni.getStorageSync('accessToken');
+		console.log(config.url)
+		console.log(store.state.socUrlArr);
+		if(store.state.socUrlArr.indexOf(config.url) == -1) {
+			config.header['Authorization'] = uni.getStorageSync('orgAccessToken');
+		} else {
+			config.header['Authorization'] = uni.getStorageSync('accessToken');
+		}
+
+		//config.header['Authorization'] = uni.getStorageSync('accessToken');
 		// 单商户
 		// config.header['merchant-id'] = uni.getStorageSync('merchantId') || 1;
 		return config;

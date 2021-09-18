@@ -66,7 +66,7 @@ export default {
 			sub_time_arr_now: [],
 			get_count_arr: [1],
 			receive_falg: 1,
-			userObj: this.$mStore.getters.userObj,
+			orgUserInfo: this.$mStore.getters.orgUserInfo,
 			dateFlag: true
 		};
 	},
@@ -227,7 +227,7 @@ export default {
 			}
 
 			this.lyqParams.service_id = this.serviceArr[this.serviceIndex].id;
-			this.lyqParams.member_id = this.userObj.memberId;
+			this.lyqParams.member_id = this.orgUserInfo.memberId;
 			this.lyqParams.org_id = this.$mStore.getters.orgId;
 			this.lyqParams.product_id = this.product.id;
 			if(this.lyqParams.sub_time.indexOf("至") != -1) {

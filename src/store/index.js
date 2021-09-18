@@ -5,6 +5,7 @@ import $mSettingConfig from '@/config/setting.config';
 
 Vue.use(Vuex);
 const ACCESSTOKEN = uni.getStorageSync('accessToken') || '';
+const ORGACCESSTOKEN = uni.getStorageSync('orgAccessToken') || '';
 const REFERRER = uni.getStorageSync('referrer') || '';
 const USER = uni.getStorageSync('user') || {};
 const REFRESHTOKEN = uni.getStorageSync('refreshToken') || '';
@@ -20,10 +21,17 @@ const ORGLIST = uni.getStorageSync('orgList') || [];
 
 const MESSAGEDATA = uni.getStorageSync('messageData') || {};
 
+const OPENID = uni.getStorageSync('openid') || '';
+const SESSIONKEY = uni.getStorageSync('session_key') || '';
+const WXUSERINFO = uni.getStorageSync('wx_userInfo') || {};
+
+const ORGUSERINFO = uni.getStorageSync('orgUserInfo') || {};
+
 const store = new Vuex.Store({
 	state: {
 		// 用户token
 		accessToken: ACCESSTOKEN,
+		orgAccessToken: ORGACCESSTOKEN,
 		orgId: ORGID,
 		orgList: ORGLIST,
 		socName: "香港山東社團總會",
@@ -32,7 +40,11 @@ const store = new Vuex.Store({
 		// 推荐人
 		referrer: REFERRER,
 		// 小程序openid
-		openId: '',
+		openid: OPENID,
+		wx_userInfo: WXUSERINFO,
+		session_key: SESSIONKEY,
+		appId: 'wx368905d55ac733da',
+		secret: 'c06d0cfaeab3b7c04c5e45ece907ba01',
 		// 网络状态，用于下载提醒
 		networkState: 'unknown',
 		globalConfig: GLOBALCONFIG,
@@ -53,9 +65,29 @@ const store = new Vuex.Store({
 		// 国际化
 		locale: LOCALE,
 		userObj: USER,
-		messageData: MESSAGEDATA
+		orgUserInfo: ORGUSERINFO,
+		messageData: MESSAGEDATA,
+		socUrlArr: [
+			"/soc/sso/getOrgLis",
+			"/soc/sso/verifyUserToken"
+		],
 	},
 	getters: {
+		socUrlArr: state => {
+			return state.socUrlArr
+		},
+		wx_userInfo: state => {
+			return state.wx_userInfo
+		},
+		openid: state => {
+			return state.openid
+		},
+		appId: state => {
+			return state.appId
+		},
+		secret: state => {
+			return state.secret
+		},
 		orgList: state => {
 			return state.orgList;
 		},
@@ -71,6 +103,9 @@ const store = new Vuex.Store({
 		},
 		userObj: state => {
 			return state.userObj;
+		},
+		orgUserInfo: state => {
+			return state.orgUserInfo;
 		},
 		// 社團信息
 		messageData: state => {
@@ -88,7 +123,7 @@ const store = new Vuex.Store({
 				color: '#0081ff',
 				tabList: [
 					'/static/tab/home_select.png',
-					//'/static/SOC_logo.png',
+					'/static/SOC_logo.png',
 					'/static/tab/my_select.png',
 				]
 			}
@@ -102,12 +137,28 @@ const store = new Vuex.Store({
 		networkStatus: state => {
 			return state.networkState;
 		},
-		// 判断用户是否登录
+		// 判断用户是否登录--平台
 		hasLogin: state => {
 			return !!state.accessToken;
+		},
+		// 判断用户是否登录--平台
+		hasLoginOrg: state => {
+			return !!state.orgAccessToken;
 		}
 	},
 	mutations: {
+		setWx_userInfo(state,wx_userInfo) {
+			state.wx_userInfo = wx_userInfo;
+			uni.setStorageSync('wx_userInfo', wx_userInfo);
+		},
+		setOpenid(state,openid) {
+			state.openid = openid;
+			uni.setStorageSync('openid', openid);
+		},
+		setSession_key(state,session_key) {
+			state.session_key = session_key;
+			uni.setStorageSync('session_key', session_key);
+		},
 		setOrgList(state,orgList) {
 			state.orgList = orgList;
 			uni.setStorageSync('orgList', orgList);
@@ -116,16 +167,29 @@ const store = new Vuex.Store({
 			state.orgId = orgId;
 			uni.setStorageSync('orgId', orgId);
 		},
+		loginOrg(state,Obj) {
+			state.accessToken = Obj.Token;
+			state.refreshToken = Obj.Token;
+			state.orgAccessToken = Obj.Token;
+			state.orgUserInfo = Obj.UserInfo;
+			uni.setStorageSync('orgUserInfo', Obj.UserInfo);
+			uni.setStorageSync('orgAccessToken', Obj.Token);
+			uni.setStorageSync('accessToken', Obj.Token);
+			uni.setStorageSync('refreshToken',Obj.Token);
+		},
+		logoutOrg(state) {
+			state.orgAccessToken = '';
+			state.orgUserInfo = {}
+			uni.removeStorageSync('orgAccessToken');
+		},
 		login(state,Obj) {
 			state.accessToken = Obj.Token;
 			state.refreshToken = Obj.Token;
-			//state.userInfo = Obj.UserInfo.memberName;
 			state.user = Obj.UserInfo;
 			state.userObj = Obj.UserInfo;
 			uni.setStorageSync('user', Obj.UserInfo);
 			uni.setStorageSync('accessToken', Obj.Token);
 			uni.setStorageSync('refreshToken',Obj.Token);
-			//uni.setStorageSync('userInfo', Obj.UserInfo.memberName);
 		},
 		logout(state) {
 			state.accessToken = '';
@@ -145,8 +209,8 @@ const store = new Vuex.Store({
 			uni.setStorageSync('messageData', messageData);
 		},
 		setUserObj(state,userObj) {
-			state.userObj = userObj;
-			uni.setStorageSync('user', userObj);
+			state.orgUserInfo = userObj;
+			uni.setStorageSync('orgUserInfo', userObj);
 		},
 		setReferrer(state, referrer) {
 			state.referrer = referrer;
@@ -240,6 +304,9 @@ const store = new Vuex.Store({
 		},
 		networkStateChange({ commit }, info) {
 			commit('setNetworkState', info);
+		},
+		logoutOrg({ commit }) {
+			commit('logoutOrg');
 		},
 		logout({ commit }) {
 			commit('logout');

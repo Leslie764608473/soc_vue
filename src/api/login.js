@@ -21,6 +21,10 @@ const verifyAccessToken = '/soc/sso/verifyUserToken';
 
 const getOrgList = '/soc/sso/getOrgList';
 
+const getSessionKeyOrOpenId = '/soc/sso/getSessionKeyOrOpenId';
+const wechatLogin = '/soc/sso/wechatLogin';
+const bindMobile = '/soc/sso/bindMobile';
+const loginByAuthCode = '/soc/sso/loginByAuthCode';
 export {
 	getRegister,
 	serviceList,
@@ -32,5 +36,9 @@ export {
 	verifyTelephone,
 	verifyAccessToken,
 	getOrgList,
-	loginNot
+	loginNot,
+	getSessionKeyOrOpenId,
+	wechatLogin,
+	bindMobile,
+	loginByAuthCode
 };

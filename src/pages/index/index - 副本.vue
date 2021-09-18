@@ -4,11 +4,11 @@
 				<cover-image class="loadingImg" src="https://wecarecard.oss-cn-hongkong.aliyuncs.com/mall/images/2021-09/f9pkb7fqz5r1631775970000"></cover-image>
 		</view>
 
-		<noLogin v-if="choseSoc == 1" :backTop="backTop"></noLogin>
+		<noLogin v-if="choseSoc == 1"></noLogin>
 		<view v-else :style="{'padding-top': inputTop+'px'}">
 						<view class="rf-search-bar" id="socTopView">
 							<view :style="{'top': backTop+'px'}" class="noLoginBack">
-								<!-- <image @tap="backAll" class="backLogo" :src="allLogo"></image> -->
+								<image @tap="backAll" class="backLogo" :src="allLogo"></image>
 								<!-- <uni-icons @tap="backAll" type="home" color="#4f4f4f" size="30"></uni-icons> -->
 							</view>
 				<view class="contentBox">
@@ -17,11 +17,10 @@
 						<view class="st_name">{{messageData.orgName}}</view>
 					</view>
 					<view class="logoRight">
-						<button type="default" v-if="!hasLoginOrg" @tap="toRegister" class="bColor logoBtn">申請加入</button>
-						<button type="default" v-if="hasLoginOrg && orgUserInfo.status == -1" class="bColor logoBtn">審核中</button>
+						<button v-if="!hasLogin" type="default" @tap="toRegister" class="bColor logoBtn">申請加入</button>
 					</view>
 				</view>
-				<view class="st_jianjie" @tap="toSTDetail">
+				<view class="st_jianjie">
 					<view :class="{'turnOpen': downFlag}">
 						<view class="introBox" v-html="messageData.intro"></view>
 						<text @tap="toSTDetail" v-if="downFlag" class="lookBtn">查看詳情</text>
@@ -46,7 +45,7 @@
 	import rfLoadMore from '@/components/rf-load-more/rf-load-more';
 	import { getMessage } from '@/api/userInfo';
 	import {productList} from '@/api/product';
-	import {logout,verifyAccessToken,login,loginNot,getOrgList} from '@/api/login.js';
+	import {logout,verifyAccessToken,login,loginNot} from '@/api/login.js';
 
 	export default {
 		components: {
@@ -56,7 +55,7 @@
 		},
 		data() {
 			return {
-				choseSoc: 0,
+				choseSoc: 1,
 				loadingFlag: true,
 				allLogo: allLogo,
 				initLoading: true,
@@ -70,9 +69,7 @@
 				messageHeight: 221,
 				backTop: 44,
 				hasLogin: false,
-				hasLoginOrg: false,
 				userInfo: this.$mStore.getters.userObj,
-				orgUserInfo: this.$mStore.getters.orgUserInfo,
 			};
 		},
 		onShow() {
@@ -80,8 +77,7 @@
 		},
 		onTabItemTap(item) {
 		    if(item.index == 1) {
-					this.loadingFlag = true;
-					this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=0' });
+					this.backAll();
 				}
 		},
 		onShareAppMessage: function() {
@@ -115,62 +111,63 @@
 				}
 			});
 
-			this.hasLogin = this.$mStore.getters.hasLogin;
-			this.userInfo = this.$mStore.getters.userObj;
-			this.hasLoginOrg = this.$mStore.getters.hasLoginOrg;
-			this.orgUserInfo = this.$mStore.getters.orgUserInfo;
-
-			this.$forceUpdate();
-
-			this.getOrgListFn();
-
 			this.choseSoc = parseInt(options.choseSoc);
+			if(this.choseSoc == 1) {
+				this.backAll();
+				return false;
+			}
 
-			if(!this.hasLogin) {
-				// 沒登錄 直接去登錄
-				this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
-			} else {
-				// 已登錄
-				if(this.choseSoc == 1) {
-					this.backAll();
-					return false;
-				}
 
-				if(options.orgId) {
-					// 連接帶 orgId
-					if(this.orgUserInfo.umsMember.orgIdList.indexOf(parseFloat(options.orgId)) == -1) {
-						// 本人不在該社團
-						this.backAll();
-					} else {
-						if(this.orgUserInfo.umsMember.orgId == options.orgId) {
-							// 當前社團一致
+			setTimeout(()=>{
+				this.hasLogin = this.$mStore.getters.hasLogin;
+				this.userInfo = this.$mStore.getters.userObj;
+				this.$forceUpdate();
+
+				if(this.hasLogin) {
+					// 登錄狀態
+					if(options.orgId) {
+						// 連接帶 orgId
+						if(this.userInfo.umsMember.orgIdList.indexOf(parseFloat(options.orgId)) == -1) {
+							this.toLogout();
 							this.$mStore.commit('setOrgId',options.orgId);
 							this.NowOrgId = options.orgId;
-							this.initAll();
 						} else {
-							// 當前社團不一致  重新選擇社團
-							this.backAll();
+							if(this.userInfo.umsMember.orgId == options.orgId) {
+								// 當前社團一致
+								this.$mStore.commit('setOrgId',options.orgId);
+								this.NowOrgId = options.orgId;
+							} else {
+								// 當前社團不一致  重新登錄
+								this.toLogin(options.orgId);
+								return false;
+							}
 						}
+					} else {
+						// 連接不帶 orgId
+						this.NowOrgId = this.$mStore.getters.orgId;
 					}
+					this.initAllOne();
 				} else {
-					this.backAll();
+					// 非登錄狀態
+					if(options.orgId) {
+						// 連接帶 orgId
+						this.$mStore.commit('setOrgId',options.orgId);
+						this.NowOrgId = options.orgId;
+					} else {
+						// 連接不帶 orgId
+						this.NowOrgId = null;
+					}
+					this.initAll();
 				}
-			}
+				this.$forceUpdate();
+			},500);
 		},
 		methods: {
-			getOrgListFn() {
-				this.$http.get(getOrgList,{mobile:this.userInfo.mobile}).then((r) => {
-					if(r.code == 200) {
-						this.$mStore.commit('setOrgList',r.data);
-					}
-				});
-			},
 			toLogin(orgChoseId) {
-				this.loadingFlag = true;
 				let uuid = this.getUuid();
 				let login_param = {};
 				login_param = {
-					username: this.userInfo.mobile,
+					username: this.userInfo.umsMember.mobile,
 					orgId: orgChoseId,
 					onlyUuid: uuid
 				}
@@ -180,16 +177,15 @@
 						if(res.code == 200) {
 							uni.setStorageSync('accessToken', res.data.tokenHead+""+res.data.token);
 							uni.setStorageSync('refreshToken',res.data.tokenHead+""+res.data.token);
-							uni.setStorageSync('orgAccessToken',res.data.tokenHead+""+res.data.token);
 							this.$http.get(verifyAccessToken).then((r) => {
-									this.$mStore.commit('loginOrg',{
+									this.$mStore.commit('login',{
 										Token: res.data.tokenHead+""+res.data.token,
 										UserInfo: r.msg
 									});
 
 									setTimeout(()=>{
 										this.$mStore.commit('setOrgId',orgChoseId);
-										this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&orgId=${orgChoseId}` });
+										this.$mRouter.reLaunch({ route: `/pages/index/index?orgId=${orgChoseId}` });
 									},500);
 
 							})
@@ -215,15 +211,31 @@
 				    frontColor: '#ffffff',
 				    backgroundColor: '#ff0000',
 				    animation: {
-				        duration: 200,
+				        duration: 400,
 				        timingFunc: 'easeIn'
 				    }
 				});
 				uni.hideTabBar();
 				this.choseSoc = 1;
 			},
+			initAllOne() {
+				this.initMessage();
+				uni.setNavigationBarColor({
+				    frontColor: '#000000',
+				    backgroundColor: '#ff0000',
+				    animation: {
+				        duration: 400,
+				        timingFunc: 'easeIn'
+				    }
+				})
+				uni.showTabBar();
+				setTimeout(()=>{
+					//this.changeHeight();
+					//this.$refs.productSd.initList();
+				},500);
+			},
 			initAll() {
-				if(this.choseSoc == 1) {
+				if(parseInt(this.choseSoc) == 1) {
 					uni.setNavigationBarColor({
 					    frontColor: '#ffffff',
 					    backgroundColor: '#ff0000',
@@ -235,23 +247,21 @@
 					uni.hideTabBar();
 					return false;
 				}
-
-				this.loadingFlag = true;
 				uni.showTabBar();
 				this.initMessage();
 				uni.setNavigationBarColor({
-						frontColor: '#000000',
-						backgroundColor: '#ff0000',
-						animation: {
-								duration: 400,
-								timingFunc: 'easeIn'
-						}
+				    frontColor: '#000000',
+				    backgroundColor: '#ff0000',
+				    animation: {
+				        duration: 400,
+				        timingFunc: 'easeIn'
+				    }
 				})
-
+				this.loadingFlag = true;
 				setTimeout(()=>{
+					this.loadingFlag = false;
 					this.changeHeight();
 					this.$refs.productSd.initList();
-					this.loadingFlag = false;
 				},500);
 			},
 			toLogout(orgId) {
@@ -288,8 +298,8 @@
 				this.$mRouter.push({ route: '/pages/stDetail/stDetail' });
 			},
 			toRegister() {
-				//this.$mRouter.push({ route: '/pages/public/registerFirst' });
-				this.$mRouter.push({ route: '/pages/public/register' });
+				this.$mRouter.push({ route: '/pages/public/registerFirst' });
+				//this.$mRouter.push({ route: '/pages/public/register' });
 			},
 		}
 	};

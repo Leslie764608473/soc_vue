@@ -131,7 +131,7 @@ export default {
 					name: '女'
 				}
 			],
-			userInfo: this.$mStore.getters.userObj,
+			userInfo: this.$mStore.getters.orgUserInfo,
 			genderName: 0,
 			date: moment().format('YYYY-MM-DD'),
 			token: null,
@@ -209,7 +209,7 @@ export default {
 									}
 									})
 									.then(r => {
-										let obj = _this.$mStore.getters.userObj;
+										let obj = _this.$mStore.getters.orgUserInfo;
 										obj.icon = JSON.parse(fileResTwo.data).url;
 										obj.umsMember.icon = JSON.parse(fileResTwo.data).url;
 										_this.$mStore.commit('setUserObj',obj);
@@ -271,12 +271,15 @@ export default {
 					}
 				})
 				.then(() => {
+					let obj = _this.$mStore.getters.orgUserInfo;
+					obj.umsMember.nickname = this.profileInfo.nickname;
+					_this.$mStore.commit('setUserObj',obj);
 					/* let obj = _this.$mStore.getters.userObj;
 					obj.memberName = this.profileInfo.nameZh;
 					obj.umsMember.nameZh = this.profileInfo.nameZh;
 					_this.$mStore.commit('setUserObj',obj); */
-					
-					
+
+
 					/* clearInterval(timer);
 					this.loadProgress = 0;
 					this.$mHelper.toast('恭喜您, 個人資料修改成功!');

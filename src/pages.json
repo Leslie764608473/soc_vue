@@ -6,6 +6,22 @@
 		}
 	}, */
 	"pages": [
+		// 微信綁定
+		{
+			"path": "pages/index/welcome/index",
+			"style": {
+				"navigationBarTitleText": "登錄",
+				"navigationStyle": "custom"
+			}
+		},
+		// 手機綁定
+		{
+			"path": "pages/index/mobile/index",
+			"style": {
+				"navigationBarTitleText": "手機號註冊",
+				"navigationStyle": "custom"
+			}
+		},
 		// 主页
 		{
 			"path": "pages/index/index",
@@ -771,18 +787,18 @@
 		"borderStyle": "black",
 		"backgroundColor": "#ffffff",
 		"list": [
-			{
+						{
 							"pagePath": "pages/index/index",
 							"iconPath": "static/tab/home.png",
 							"selectedIconPath": "static/tab/home_select.png",
 							"text": "首頁"
 						},
-						/* {
+						{
 							"pagePath": "pages/index/index",
 							"iconPath": "static/SOC_logo.png",
 							"selectedIconPath": "static/SOC_logo.png",
-							"text": ""
-						}, */
+							"text": "連心"
+						},
 						/* {
 							"pagePath": "pages/category/category",
 							"iconPath": "static/tab/shetuan.png",

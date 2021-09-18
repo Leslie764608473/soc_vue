@@ -10,19 +10,23 @@
 					class="portrait-box"
 
 				>
-					<image
-						class="portrait"
-						:src="userInfo.umsMember.icon || headImg"
-					></image>
-					<view class="userInfoTBox">
+					<image v-if="hasLogin" class="portrait" :src="orgUserInfo.umsMember.icon || headImg" ></image>
+					<image v-if="!hasLogin" class="portrait" :src="userInfo.icon || headImg" ></image>
+					<view class="userInfoTBox" v-if="hasLogin">
 						<view class="userInfoT" @tap="navTo(userInfo ? '/pages/user/userinfo/userinfo' : 'login')">
-							{{userInfo.memberName || '登錄/註冊'}}
+							{{orgUserInfo.umsMember.nickname || '登錄/註冊'}}
 						</view>
-						<view v-if="orgId == 46" class="userInfoT">{{userInfo.umsMember.memberNum}}</view>
-						<view v-else class="userInfoT">{{userInfo.username}}</view>
+						<view v-if="orgId == 46" class="userInfoT">{{orgUserInfo.umsMember.memberNum}}</view>
+						<view v-else class="userInfoT">{{orgUserInfo.username}}</view>
+					</view>
+					<view class="userInfoTBox" v-if="!hasLogin">
+						<view class="userInfoT">
+							{{userInfo.nickname || '登錄/註冊'}}
+						</view>
+						<view class="userInfoT">{{userInfo.mobile}}</view>
 					</view>
 				</view>
-				<uni-icons @tap="navTo(userInfo ? '/pages/user/userinfo/userinfo' : 'login')" type="arrowright" color="#ffffff" class="downIcon" size="20"></uni-icons>
+				<uni-icons v-if="hasLogin" @tap="navTo(hasLogin ? '/pages/user/userinfo/userinfo' : '')" type="arrowright" color="#ffffff" class="downIcon" size="20"></uni-icons>
 			</view>
 		</view>
 
@@ -42,13 +46,13 @@
 					<view class="itemNum" v-if="flNum != 0">{{flNum}}</view>
 				</view>
 			</view>
-			<view class="myBoxItem" style="margin-top: 20rpx;" @tap="navTo('/pages/user/mysoc/index')">
+			<!-- <view class="myBoxItem" style="margin-top: 20rpx;" @tap="navTo('/pages/user/mysoc/index')">
 				<image class="item_image" :src="my_shetuan"></image>
 				<view class="item_text">
 					<text>我的社團</text>
 					<view class="itemNum" v-if="flNum != 0">{{flNum}}</view>
 				</view>
-			</view>
+			</view> -->
 		</view>
 
 				<!-- <view class="logOutBtn" @tap="toLogout" v-if="hasLogin">
@@ -94,6 +98,7 @@ export default {
 			coverTransition: '0s',
 			moving: false,
 			userInfo: this.$mStore.getters.userObj,
+			orgUserInfo: this.$mStore.getters.orgUserInfo,
 			footPrintList: [], // 足迹列表
 			loading: true,
 			appName: this.$mSettingConfig.appName,
@@ -229,7 +234,16 @@ export default {
 		//...mapMutations(['login']),
 		// 数据初始化
 		async initData() {
-			this.hasLogin = this.$mStore.getters.hasLogin;
+			this.hasLogin = this.$mStore.getters.hasLoginOrg;
+
+			if(this.hasLogin) {
+				// 社團登錄
+
+			} else {
+				// 社團未登錄
+
+			}
+
 			this.orgId = this.$mStore.getters.orgId;
 			uni.setTabBarStyle({
 				selectedColor: this.themeColor.color,
@@ -241,34 +255,6 @@ export default {
 					selectedIconPath
 				});
 			});
-			if (this.hasLogin) {
-				//await this.getMemberInfo();
-				this.loading = false;
-			} else {
-				this.loading = false;
-				//this.resetSectionData();
-			}
-		},
-		// 获取用户信息
-		async getMemberInfo() {
-			await this.$http
-				.get(verifyAccessToken)
-				.then(async r => {
-					this.loading = false;
-					this.userInfo = r.msg;
-					this.$forceUpdate();
-					//await this.setCartNum(r.data.cart_num);
-					//await this.initNotifyNum();
-					/// 获取足迹列表
-					//await this.getFootPrintList();
-					//await this.setSectionData(r.data);
-				})
-				.catch(() => {
-					this.hasLogin = false;
-					this.userInfo = {};
-					//this.resetSectionData();
-					this.loading = false;
-				});
 		},
 		// 设置未读消息个数
 		async initNotifyNum () {
@@ -314,11 +300,8 @@ export default {
 		// 统一跳转接口,拦截未登录路由
 		navTo(route) {
 			if (!route) return;
-			if (route === '/pages/index/notice/notice') {
-				this.$mRouter.push({ route });
-			} else if (!this.hasLogin) {
-				uni.removeStorageSync('backToPage');
-				this.$mRouter.push({ route: '/pages/public/logintype' });
+			if(!this.hasLogin) {
+				uni.showToast({title:"您還未加入本社團！",icon:"none"});
 			} else {
 				this.$mRouter.push({ route });
 			}

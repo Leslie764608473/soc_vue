@@ -102,7 +102,7 @@ export default {
 			moneySymbol: this.moneySymbol,
 			currentCoupon: {},
 			loading: true,
-			userObj: this.$mStore.getters.userObj,
+			orgUserInfo: this.$mStore.getters.orgUserInfo,
 		};
 	},
 	filters: {
@@ -220,7 +220,7 @@ export default {
 						pageSize : this.pageSize,
 						pageNum : this.page,
 						is_use : isUser,
-						member_id : this.userObj.memberId,
+						member_id : this.orgUserInfo.memberId,
 						time_status : time_status,
 					}
 				})

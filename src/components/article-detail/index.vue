@@ -9,10 +9,10 @@
 							<text class="iconfont iconfenxiang"></text>
 							<text class="tui-share-text tui-gray">分享</text>
 						</button>
-						<!-- <button class="share-btn" :class="'text-' + themeColor.name" @tap.stop="copyFn()">
+						<button class="share-btn" :class="'text-' + themeColor.name" @tap.stop="copyFn()">
 							<text class="iconfont iconcopy"></text>
 							<text class="tui-share-text tui-gray">複製鏈接</text>
-						</button> -->
+						</button>
 				</view>
 			</view>
 			<!-- <view class="productContent" v-html="product.contentHtml.trim()"></view> -->

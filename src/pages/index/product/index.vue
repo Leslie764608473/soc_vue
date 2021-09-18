@@ -183,6 +183,9 @@ export default {
 			await this.$http
 				.post(`${productList}`,{},{params: this.dataParams})
 				.then(async r => {
+					if(!r.data.list) {
+						r.data.list = [];
+					}
 					this.initRresh(type);
 					this.loading = false;
 					if(this.tabCurrentIndex != 1) {

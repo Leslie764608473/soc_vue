@@ -1,12 +1,15 @@
 <script>
 /* eslint-disable */
 import Vue from 'vue';
-import { verifyAccessToken,getOrgList } from '@/api/login';
+import { verifyAccessToken } from '@/api/login';
 import { getMessage } from '@/api/userInfo';
 import { mapMutations } from 'vuex';
 export default {
 	async onLaunch(option) {
 		await this.initData();
+	},
+	onShow() {
+
 	},
 	onShareAppMessage: function() {
 		return {
@@ -18,7 +21,6 @@ export default {
 		...mapMutations(['setCartNum', 'setNotifyNum']),
 		// 数据初始化
 		async initData() {
-			this.getOrgListFn();
 			uni.setTabBarStyle({
 				selectedColor: this.themeColor.color,
 				borderStyle: 'white'
@@ -63,18 +65,11 @@ export default {
 				}
 			});
 		},
-		getOrgListFn() {
-			this.$http.get(getOrgList).then((r) => {
-				if(r.code == 200) {
-					this.$mStore.commit('setOrgList',r.data);
-				}
-			});
-		},
 		// 检验token是否有效
 		async handleVerifyAccessToken (token) {
 			  await this.$http.get(verifyAccessToken).then((r) => {
 						if(r.status) {
-							this.$mStore.commit('login',{
+							this.$mStore.commit('loginOrg',{
 								Token: token,
 								UserInfo: r.msg
 							});

@@ -104,6 +104,7 @@
 			}
 		},
 		onLoad(options) {
+			return false;
 			this.$mStore.commit('logout');
 			/*  #ifdef H5  */
 			if (this.$mPayment.isWechat()) {

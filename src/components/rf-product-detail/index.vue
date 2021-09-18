@@ -318,8 +318,8 @@
 				currentSkuName: null,
 				currentCartCount: 1,
 				evaluateList: [],
-				hasLogin: this.$mStore.getters.hasLogin,
-				userObj: this.$mStore.getters.userObj,
+				hasLogin: this.$mStore.getters.hasLoginOrg,
+				orgUserInfo: this.$mStore.getters.orgUserInfo,
 				cartNum: uni.getStorageSync('cartNum'),
 				addressTypeList: this.$mConstDataConfig.addressTypeList,
 				tabCurrentIndex: 0,
@@ -443,7 +443,7 @@
 				if(parseInt(type) == 1) {
 					this.$http
 						.post(addCoupon,{},{params:{
-							member_id : this.userObj.memberId,
+							member_id : this.orgUserInfo.memberId,
 							product_id : this.product.id
 						}})
 						.then(res => {
@@ -490,7 +490,7 @@
 				};
 				if(parseInt(type) == 1) {
 					this.isLyqPopupShow = true;
-					this.getServeArr(this.userObj.memberId,this.product.id);
+					this.getServeArr(this.orgUserInfo.memberId,this.product.id);
 				} else {
 					this.$mHelper.toast("您已領取該券");
 				}

@@ -9,7 +9,7 @@
 			<view class="welcome">
 				您正在申請加入
 				<image :src="NowLogo" class="logo"></image>
-				<text>{{registerService_center_id}}</text>
+				<text class="registerOrgName">{{registerSt}}</text>
 				<view>請準確填寫以下信息</view>
 			</view>
 			<uni-collapse class="collapseBox">
@@ -22,6 +22,11 @@
 					</template>
 					<view class="collapseContent">
 						<uni-forms class="registerForm" ref="registerForm1" :modelValue="registerParams" label-position="top" label-width="500">
+							<view style="display: block;margin-top: 20rpx;margin-left: -15rpx;border-bottom: 1px solid #dedede;">
+								<picker @change="bindPickerChange" :value="serviceIndex" :range="serviceNameArr">
+									<uni-easyinput style="background: white;" disabled :inputBorder="false" type="text" v-model="registerSt" placeholder="請選擇所屬社團分會" />
+								</picker>
+							</view>
 							<uni-forms-item v-if="item.type == '基本信息'" class="registerFormItem" :required="item.isRequired==1?true:false" :label="item.nameZh" :name="item.nameEn" v-for="(item,index) in registerItems" :key="index">
 								<uni-data-checkbox v-if="item.nameEn == 'gender'" v-model="registerParams[item.nameEn]" :localdata="JSON.parse(item.selectContent)" ></uni-data-checkbox>
 								<view v-else-if="item.nameEn == 'birthday_str'" style="position: relative;">
@@ -286,14 +291,10 @@ export default {
 			openThree: false,
 			openTwo: false,
 			openOne: false,
-			serviceArr: [],
-			serviceNameArr: [],
-			serviceIndex: 0,
 			registerDate: new Date(),
 			signImage: '',
 			isEnd: false ,// 是否签名
 			registerMobile: "",
-			registerService_center_id: "",
 			registerService_id: "",
 			registerOrg_id: "",
 			orgChoseName: "",
@@ -301,16 +302,19 @@ export default {
 			idCard2 : idcard2,
 			uploadFalg: false,
 			birthday_strShow: "",
-			native_placeShow: ""
+			native_placeShow: "",
+			serviceArr: [],
+			serviceNameArr: [],
+			serviceIndex: 0,
+			registerSt: "",
+			userInfo: this.$mStore.getters.userObj,
 		};
 	},
 	components: {
 		htzSignature
 	},
 	onShow() {
-		if (uni.getStorageSync('accessToken')) {
-			this.$mRouter.reLaunch({ route: '/pages/index/index' });
-		}
+
 	},
 	onLoad(options) {
 		_that = this;
@@ -326,9 +330,6 @@ export default {
 		//设置两条线连接处更加圆润
 		content.setLineJoin('round')
 
-		if (this.$mStore.getters.hasLogin) {
-			this.$mRouter.reLaunch({ route: '/pages/index/index' });
-		}
 		const time =
 			moment().valueOf() / 1000 - uni.getStorageSync('registerSmsCodeTime');
 		if (time < 60) {
@@ -350,9 +351,9 @@ export default {
 
 	},
 	created() {
-		this.registerOrg_id = uni.getStorageSync('registerOrg_id');
-		this.orgChoseName = uni.getStorageSync('orgChoseName');
-		
+		this.registerOrg_id = this.$mStore.getters.orgId;
+		this.getServeArr(this.registerOrg_id);
+		this.orgChoseName = this.$mStore.getters.messageData.orgName;
 		let orgLogo =  this.$mStore.getters.messageData.orgLogo;
 		this.NowLogo = orgLogo;
 
@@ -370,14 +371,32 @@ export default {
 			this.ctx = uni.createCanvasContext("mycanvas", this);
 		});
 
-		this.registerMobile = uni.getStorageSync('registerMobile');
-		this.registerService_center_id = uni.getStorageSync('registerService_center_id');
-		this.registerService_id = uni.getStorageSync('registerService_id');
+		this.registerMobile = this.userInfo.mobile;
+		//this.registerService_id = uni.getStorageSync('registerService_id');
 	},
 	watch: {
 
 	},
 	methods: {
+		getServeArr(id) {
+			this.$http.post(serviceList+"?orgId="+id).then((res)=>{
+				this.serviceArr = res.data;
+				this.serviceNameArr = [];
+				res.data.forEach((item)=>{
+					let name = item.name;
+					if(item.name == "香港山東社團总会" || item.name == "香港山東社團總會") {
+						name += "直屬會員（非現有屬會會員）";
+					}
+					this.serviceNameArr.push(name);
+				})
+				this.$forceUpdate();
+			});
+		},
+		bindPickerChange(e) {
+			this.serviceIndex = e.target.value;
+			this.registerSt = this.serviceArr[parseFloat(e.target.value)].name;
+			this.$forceUpdate();
+		},
 		previewImage: function (e) {
 		    uni.previewImage({
 		      urls: [this.sdErcode]
@@ -596,10 +615,10 @@ export default {
 			content.draw(true);
 			this.registerParams.sign = "";
 		},
-		bindPickerChange(e) {
+		/* bindPickerChange(e) {
 			this.serviceIndex = e.target.value;
 			this.registerParams.service_center_id = this.serviceArr[parseFloat(e.target.value)].name;
-		},
+		}, */
 		birthdayChange(val) {
 			this.birthday_strShow = val.detail.value;
 			this.registerParams["birthday_str"] = val.detail.value;
@@ -630,15 +649,6 @@ export default {
 			 return true;
 		},
 		getRegisterFn() {
-			this.$http.post(serviceList+"?orgId="+this.registerOrg_id).then((res)=>{
-				this.serviceArr = res.data;
-				this.serviceNameArr = [];
-				res.data.forEach((item)=>{
-					this.serviceNameArr.push(item.name);
-				})
-				this.$forceUpdate();
-			});
-
 			this.$http.post(getRegister+"?orgId="+this.registerOrg_id).then((res)=>{
 				this.registerItems = res.data;
 				this.registerParams = {};
@@ -852,7 +862,7 @@ export default {
 			}
 
 			this.registerParams.mobile = this.registerMobile;
-			this.registerParams.service_center_id = this.serviceArr[this.registerService_id].id;
+			this.registerParams.service_center_id = this.serviceArr[this.serviceIndex].id;
 			/* if(this.registerParams.professional_sector.length>0) {
 				this.registerParams.professional_sector = this.registerParams.professional_sector.join();
 			} */
@@ -876,6 +886,14 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+	.registerOrgName{
+		display: inline-block;
+		width: calc(100% - 280rpx);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		vertical-align: middle;
+	}
 	.share-bg {
 		width: 75%;
 		background-color: white;
