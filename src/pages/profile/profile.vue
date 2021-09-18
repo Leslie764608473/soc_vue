@@ -20,8 +20,8 @@
 						<view v-else class="userInfoT">{{orgUserInfo.username}}</view>
 					</view>
 					<view class="userInfoTBox" v-if="!hasLogin">
-						<view class="userInfoT">
-							{{userInfo.nickname || '登錄/註冊'}}
+						<view class="userInfoT" v-if="userInfo.nickname">
+							{{userInfo.nickname}}
 						</view>
 						<view class="userInfoT">{{userInfo.mobile}}</view>
 					</view>

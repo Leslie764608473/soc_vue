@@ -2,9 +2,12 @@
 	<view class="noLoginMain">
 		<view class="userInfoBox" :style="{'top': (backTop+20)+'px'}">
 			<image class="icon" :src="userInfo.icon || headImg" mode=""></image>
-			<view class="textBox">
-				<view v-if="userInfo.nickname">{{userInfo.nickname}}</view>
+			<view v-if="userInfo.nickname" class="textBox">
+				<view>{{userInfo.nickname}}</view>
 				<view style="font-size: 27rpx;">{{userInfo.mobile}}</view>
+			</view>
+			<view v-else class="textBox">
+				<view>{{userInfo.mobile}}</view>
 			</view>
 		</view>
 		<image class="bgTopImg" :src="noLoginBg"></image>
@@ -85,10 +88,12 @@
 			margin-right: 20rpx;
 			width: 70rpx;
 			height: 70rpx;
+			float: left;
 		}
 		.textBox{
 			display: inline-block;
 			color: white;
+			float: left;
 		}
 	}
 	.noLoginMain{
