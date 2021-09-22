@@ -162,7 +162,7 @@
 			},
 			simpleWebSign() {
 				if(!this.hasLogin) {
-					this.$mRouter.push({ route: '/pages/public/logintype' });
+					this.$mRouter.push({ route: '/pages/public/register' });
 					return false;
 				}
 				if(parseFloat(this.bmFlag) == 1) {

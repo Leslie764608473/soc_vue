@@ -1,13 +1,19 @@
 <template>
 	<view class="welcomeMain">
+		<image src="https://datalinc.oss-cn-shenzhen.aliyuncs.com/mall/images/2021-09/k7lkux444o1632135048000" class="mainBgImg"></image>
 		<view class="loading" v-if="loadingFlag">
 				<cover-image class="loadingImg" src="https://wecarecard.oss-cn-hongkong.aliyuncs.com/mall/images/2021-09/f9pkb7fqz5r1631775970000"></cover-image>
 		</view>
 		<view class="logoBox">
 			<image src="../../../static/allLogo.png"></image>
+			<view class="name">連心</view>
+			<view class="title">用心聯繫會員，拉近彼此距離</view>
 		</view>
 		<view class="btnBox">
-				<button class="wx_btn" open-type="getUserInfo" lang="zh_CN" @tap="appLoginWx">微信用戶一鍵登錄</button>
+				<button class="wx_btn" open-type="getUserInfo" lang="zh_CN" @tap="appLoginWx">
+					<image class="wxicon" src="https://datalinc.oss-cn-shenzhen.aliyuncs.com/mall/images/2021-09/tj87z7gn2v1632135229000"></image>
+					<text>微信用戶一鍵登錄</text>
+					</button>
 				<button class="mobile_btn" @tap="mobile_login">手機號碼登錄</button>
 		</view>
 	</view>
@@ -140,6 +146,14 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+	.mainBgImg{
+		position: fixed;
+		width: 100vw;
+		height: 100vh;
+	}
+	.welcomeText{
+
+	}
 	.loading{
 		width: 100vw;
 		height: 100vh;
@@ -161,23 +175,32 @@ export default {
 	min-height: 100vh;
 	height: 100%;
 	background-color: white;
+	position: absolute;
+	z-index: 10;
 	.logoBox{
 		display: block;
-		width: 200rpx;
-		height: 200rpx;
-		border-radius: 50%;
-		padding: 25rpx;
-		background-color: white;
 		margin: 250rpx auto 170rpx auto;
-		box-shadow: 0 0  10px #f3f3f3;
+		text-align: center;
+		color: white;
+		position: relative;
 		image{
-			width: 150rpx;
-			height: 150rpx;
-			border-radius: 50%;
+			width: 160rpx;
+			height: 160rpx;
 		}
+			.name{
+				font-size: 45rpx;
+				margin: 10rpx;
+				font-weight: 500;
+			}
+			.title{
+				font-size: 30rpx;
+			}
 	}
 
 	.btnBox{
+		position: fixed;
+		bottom: 100rpx;
+		width: 100vw;
 		button{
 			display: block;
 			width: 85vw;
@@ -190,22 +213,30 @@ export default {
 				border-radius: 25rpx;
 			}
 			&.wx_btn{
-				background: linear-gradient(to right,#1eb2ff,#1797fb,#0f7df7);
+				/* background: linear-gradient(to right,#1eb2ff,#1797fb,#0f7df7);
 				&.button-hover{
 					background: linear-gradient(to left,#1eb2ff,#1797fb,#0f7df7);
 					color: white;
+				} */
+				background-color: #08e06f;
+				color: white;
+				.wxicon{
+					width: 50rpx;
+					height: 50rpx;
+					vertical-align: middle;
+					margin-right: 20rpx;
 				}
 			}
 			&.mobile_btn{
-				background-color: #ffffff;
-				color: #999999;
+				background: none;
+				color: white;
 				&::after{
-					border: 1px solid #d9d9d9;
+					border: 1px solid #ffffff;
 				}
-				&.button-hover{
+				/* &.button-hover{
 					background-color: #d9d9d9;
 					color: white;
-				}
+				} */
 			}
 		}
 	}

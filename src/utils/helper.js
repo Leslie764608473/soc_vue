@@ -29,6 +29,8 @@ export default {
 	 * 返回登录页面
 	 */
 	async backToLogin() {
+		this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=1' });
+		return false;
 		// 存当前页面的地址
 		const currentPage = getCurrentPages()[getCurrentPages().length - 1];
 		const params = {};

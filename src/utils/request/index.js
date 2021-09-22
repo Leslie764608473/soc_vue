@@ -31,8 +31,6 @@ let requests = [];
 http.interceptor.request(
 	config => {
 		/* 请求之前拦截器 */
-		console.log(config.url)
-		console.log(store.state.socUrlArr);
 		if(store.state.socUrlArr.indexOf(config.url) == -1) {
 			config.header['Authorization'] = uni.getStorageSync('orgAccessToken');
 		} else {

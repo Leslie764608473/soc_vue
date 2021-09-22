@@ -17,8 +17,8 @@
 						<view class="st_name">{{messageData.orgName}}</view>
 					</view>
 					<view class="logoRight">
-						<button type="default" v-if="!hasLoginOrg" @tap="toRegister" class="bColor logoBtn">申請加入</button>
-						<button type="default" v-if="hasLoginOrg && orgUserInfo.status == -1" class="bColor logoBtn">審核中</button>
+						<button type="default" v-if="!hasLoginOrg && auditStatus != -1" @tap="toRegister" class="bColor logoBtn">申請加入</button>
+						<button type="default" v-if="!hasLoginOrg && auditStatus == -1" class="bColor logoBtn" style="color: #ffa11b;">審核中</button>
 					</view>
 				</view>
 				<view class="st_jianjie" @tap="toSTDetail">
@@ -33,6 +33,8 @@
 			<productSD class="homeView" :messageHeight="messageHeight" :style="{'height': 'calc(100vh - '+(messageHeight+50)+'px)'}" ref="productSd"></productSD>
 		</view>
 
+		<birth-reminder ref="sdBirth" />
+
 	</view>
 </template>
 <script>
@@ -41,6 +43,8 @@
 	import socTop from '@/components/soc-top/index'
 	import productSD from '@/pages/index/product/index.vue'
 	import noLogin from '@/pages/index/noLogin/index.vue'
+
+	import birthReminder from '@/pages/index/reminder/index.vue'
 
 	import rfProductList from '@/components/rf-product-list';
 	import rfLoadMore from '@/components/rf-load-more/rf-load-more';
@@ -52,10 +56,12 @@
 		components: {
 			socTop,
 			noLogin,
-			productSD
+			productSD,
+			birthReminder
 		},
 		data() {
 			return {
+				auditStatus: this.$mStore.getters.auditStatus,
 				choseSoc: 0,
 				loadingFlag: true,
 				allLogo: allLogo,
@@ -77,12 +83,6 @@
 		},
 		onShow() {
 
-		},
-		onTabItemTap(item) {
-		    if(item.index == 1) {
-					this.loadingFlag = true;
-					this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=0' });
-				}
 		},
 		onShareAppMessage: function() {
 			return {
@@ -119,12 +119,15 @@
 			this.userInfo = this.$mStore.getters.userObj;
 			this.hasLoginOrg = this.$mStore.getters.hasLoginOrg;
 			this.orgUserInfo = this.$mStore.getters.orgUserInfo;
-
+			this.auditStatus = parseFloat(this.$mStore.getters.auditStatus);
 			this.$forceUpdate();
 
 			this.getOrgListFn();
 
 			this.choseSoc = parseInt(options.choseSoc);
+			if(options.sdBirth == 1 || options.sdBirth == "1") {
+				this.$refs.sdBirth.getReminder(this.orgUserInfo.memberId);
+			}
 
 			if(!this.hasLogin) {
 				// 沒登錄 直接去登錄
@@ -187,10 +190,18 @@
 										UserInfo: r.msg
 									});
 
-									setTimeout(()=>{
-										this.$mStore.commit('setOrgId',orgChoseId);
-										this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&orgId=${orgChoseId}` });
-									},500);
+									// 山東社團  生日祝福
+									if(orgChoseId == 46) {
+										setTimeout(()=>{
+											this.$mStore.commit('setOrgId',orgChoseId);
+											this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&sdBirth=1&orgId=${orgChoseId}` });
+										},500);
+									} else {
+										setTimeout(()=>{
+											this.$mStore.commit('setOrgId',orgChoseId);
+											this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&orgId=${orgChoseId}` });
+										},500);
+									}
 
 							})
 						}

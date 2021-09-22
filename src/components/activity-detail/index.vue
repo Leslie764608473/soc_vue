@@ -210,7 +210,7 @@
 		data() {
 			return {
 				btnLoading: false,
-				hasLogin: this.$mStore.getters.hasLogin,
+				hasLogin: this.$mStore.getters.hasLoginOrg,
 				dqIndex: 0,
 				zqIndex: 0,
 				xqIndex: 0,
@@ -311,7 +311,7 @@
 			},
 			simpleWebSign() {
 				if(!this.hasLogin) {
-					this.$mRouter.push({ route: '/pages/public/logintype' });
+					this.$mRouter.push({ route: '/pages/public/register' });
 					return false;
 				}
 				if(parseFloat(this.bmFlag) == 1) {

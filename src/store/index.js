@@ -26,6 +26,7 @@ const SESSIONKEY = uni.getStorageSync('session_key') || '';
 const WXUSERINFO = uni.getStorageSync('wx_userInfo') || {};
 
 const ORGUSERINFO = uni.getStorageSync('orgUserInfo') || {};
+const AUDITSTATUS = uni.getStorageSync('auditStatus') || 0;
 
 const store = new Vuex.Store({
 	state: {
@@ -67,12 +68,16 @@ const store = new Vuex.Store({
 		userObj: USER,
 		orgUserInfo: ORGUSERINFO,
 		messageData: MESSAGEDATA,
+		auditStatus: AUDITSTATUS,
 		socUrlArr: [
 			"/soc/sso/getOrgLis",
 			"/soc/sso/verifyUserToken"
 		],
 	},
 	getters: {
+		auditStatus: state => {
+			return state.auditStatus;
+		},
 		socUrlArr: state => {
 			return state.socUrlArr
 		},
@@ -147,6 +152,10 @@ const store = new Vuex.Store({
 		}
 	},
 	mutations: {
+		setAuditStatus(state,auditStatus) {
+			state.auditStatus = auditStatus;
+			uni.setStorageSync('auditStatus', auditStatus);
+		},
 		setWx_userInfo(state,wx_userInfo) {
 			state.wx_userInfo = wx_userInfo;
 			uni.setStorageSync('wx_userInfo', wx_userInfo);

@@ -10,6 +10,7 @@ const getmemberSignUpActivityList = '/member/activity/getmemberSignUpActivityLis
 
 const signUpActivity = '/member/activity/signUpActivity';
 
+const birthWishesReminder = '/soc/sso/birthWishesReminder';
 export {
 	activityList,
 	getActivityInfoById,
@@ -19,5 +20,6 @@ export {
 	areaDic,
 	simpleWebSign,
 	getmemberSignUpActivityList,
-	signUpActivity
+	signUpActivity,
+	birthWishesReminder
 };

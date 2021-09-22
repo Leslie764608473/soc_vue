@@ -419,7 +419,6 @@ page {
 			z-index: 9998;
 		}
 		.logoImg{
-			border-radius: 50%;
 			width: 150rpx;
 			height: 150rpx;
 			vertical-align: middle;

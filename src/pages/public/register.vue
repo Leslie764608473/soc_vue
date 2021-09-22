@@ -22,21 +22,27 @@
 					</template>
 					<view class="collapseContent">
 						<uni-forms class="registerForm" ref="registerForm1" :modelValue="registerParams" label-position="top" label-width="500">
-							<view style="display: block;margin-top: 20rpx;margin-left: -15rpx;border-bottom: 1px solid #dedede;">
+							<!-- <view style="display: block;margin-top: 20rpx;margin-left: -15rpx;border-bottom: 1px solid #dedede;">
+								<view style="padding: 0 10rpx;font-size: 14px;"><text class="label-text">社團分會</text><text class="is-required" style="color: #dd524d;">*</text></view>
 								<picker @change="bindPickerChange" :value="serviceIndex" :range="serviceNameArr">
 									<uni-easyinput style="background: white;" disabled :inputBorder="false" type="text" v-model="registerSt" placeholder="請選擇所屬社團分會" />
 								</picker>
-							</view>
+							</view> -->
+							<uni-forms-item class="registerFormItem" :required="true" label="社團分會" name="server_fh_id">
+								<picker @change="bindPickerChange" style="margin-left: -15rpx;" :value="serviceIndex" :range="serviceNameArr">
+									<uni-easyinput style="background: white;" class="disabledPicker" disabled :inputBorder="false" type="text" v-model="registerSt" placeholder="請選擇所屬社團分會" />
+								</picker>
+							</uni-forms-item>
 							<uni-forms-item v-if="item.type == '基本信息'" class="registerFormItem" :required="item.isRequired==1?true:false" :label="item.nameZh" :name="item.nameEn" v-for="(item,index) in registerItems" :key="index">
 								<uni-data-checkbox v-if="item.nameEn == 'gender'" v-model="registerParams[item.nameEn]" :localdata="JSON.parse(item.selectContent)" ></uni-data-checkbox>
 								<view v-else-if="item.nameEn == 'birthday_str'" style="position: relative;">
-									<picker mode="date" fields="month" @change="birthdayChange">
+									<picker mode="date" fields="month" style="margin-left: -15rpx;" @change="birthdayChange">
 											<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="birthday_strShow" placeholder="YYYY-MM" />
 											<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
 									</picker>
 								</view>
 								<view v-else-if="item.nameEn == 'native_place'">
-									<picker @change="pickerChange" @columnchange="columnchange" :range="addArrAll" range-key="name" mode="multiSelector">
+									<picker @change="pickerChange" style="margin-left: -15rpx;" @columnchange="columnchange" :range="addArrAll" range-key="name" mode="multiSelector">
 										<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="native_placeShow" placeholder="請選擇籍貫" />
 									</picker>
 								</view>
@@ -718,6 +724,13 @@ export default {
 			this.uploadCards();
 			this.btnLoading = true;
 			var isRequiredF = true;
+
+			if(this.registerSt == "") {
+				this.$mHelper.toast('請選擇要加入的社團分會!');
+				this.btnLoading = false;
+				return false;
+			}
+
 			this.registerItems.forEach((item)=>{
 				if(item.isRequired==1 && this.registerParams[item.nameEn] == "" && item.nameEn != 'mobile' && item.nameEn != 'wechat_num' && item.nameEn != 'state' && item.nameEn != 'is_sector') {
 						isRequiredF = false;
@@ -886,6 +899,7 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+
 	.registerOrgName{
 		display: inline-block;
 		width: calc(100% - 280rpx);

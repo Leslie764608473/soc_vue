@@ -437,7 +437,8 @@
 			},
 			add_yhq(type) {
 				if(!this.hasLogin) {
-					this.$mRouter.push({ route: '/pages/public/logintype' });
+					this.$mRouter.push({ route: '/pages/public/register' });
+					//this.$mRouter.push({ route: '/pages/public/logintype' });
 					return false;
 				};
 				if(parseInt(type) == 1) {
@@ -485,7 +486,8 @@
 			},
 			add_lyq(type) {
 				if(!this.hasLogin) {
-					this.$mRouter.push({ route: '/pages/public/logintype' });
+					this.$mRouter.push({ route: '/pages/public/register' });
+					//this.$mRouter.push({ route: '/pages/public/logintype' });
 					return false;
 				};
 				if(parseInt(type) == 1) {

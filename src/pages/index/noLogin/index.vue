@@ -13,14 +13,16 @@
 		<image class="bgTopImg" :src="noLoginBg"></image>
 		<view class="bgTop">
 			<image src="../../../static/allLogo.png" class="allLogo"></image>
-			<view class="name">SOC 連心</view>
+			<view class="name">連心</view>
 			<view class="title">用心聯繫會員，拉近彼此距離</view>
 		</view>
 		<view class="orgList">
 			<view class="orgListItem" @tap="changeOrg(item.id,item.joinStatus)" v-for="(item,index) in orgList" :key="index">
 					<image :src="item.logo" class="logoImg"></image>
 					<view class="orgName">{{item.name}}</view>
-					<image class="joinStatus" v-if="item.joinStatus == 1" src="../../../static/joinStatus.png" ></image>
+					<view class="joinStatusT joinOk" v-if="item.joinStatus == 1"><text class="word">已加入</text></view>
+					<view class="joinStatusT joinO" v-if="item.joinStatus == -1"><text class="word">已申請</text></view>
+					<!-- <image class="joinStatus" v-if="item.joinStatus == 1" src="../../../static/joinStatus.png" ></image> -->
 					<!-- <view>已有 {{item.count}} 人加入</view> -->
 			</view>
 		</view>
@@ -59,6 +61,9 @@
 				});
 			},
 			changeOrg(orgId,joinStatus) {
+				this.$mStore.commit('setAuditStatus',parseFloat(joinStatus));
+				this.$parent.auditStatus = parseFloat(joinStatus);
+				this.$forceUpdate();
 				if(joinStatus == 1) {
 					// 登錄狀態
 					this.$parent.hasLoginOrg = true;
@@ -70,6 +75,7 @@
 					this.$mStore.commit('setOrgId',orgId);
 					this.$parent.NowOrgId = orgId;
 					this.$parent.choseSoc = 0;
+					this.$forceUpdate();
 					this.$parent.initAll();
 				}
 			}
@@ -140,9 +146,36 @@
 				margin: 10rpx;
 				border-radius: 20rpx;
 				text-align: center;
-				padding: 20rpx 10rpx;
+				padding: 15rpx 10rpx;
 				overflow-y: auto;
 				position: relative;
+				.joinStatusT{
+					position: absolute;
+					color: white;
+					width: 128rpx;
+					height: 128rpx;
+					top:-64rpx;
+					right:-64rpx;
+					transform: rotate(45deg);
+					&.joinOk{
+						background-color: #0bd168;
+					}
+					&.joinO{
+						background-color: #ffa11b;
+					}
+					.word{
+						display: block;
+						position: absolute;
+						right: 35rpx;
+						top: 95rpx;
+						font-size: 24rpx;
+						transform: rotate(0deg);
+						width: 64rpx;
+						height: 64rpx;
+						white-space: nowrap;
+
+					}
+				}
 				.joinStatus{
 					position: absolute;
 					right: 0;
@@ -154,13 +187,13 @@
 				.logoImg{
 					display: block;
 					margin: 0 auto;
-					width: 22vw;
-					height: 22vw;
+					width: 19vw;
+					height: 19vw;
 				}
 				.orgName{
 					color: #333333;
 					font-size: 30rpx;
-					margin: 20rpx 0 10rpx 0;
+					margin: 15rpx 0 10rpx 0;
 					word-break: keep-all;
 					overflow: hidden;
 					text-overflow: ellipsis;

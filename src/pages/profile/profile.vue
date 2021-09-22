@@ -53,14 +53,11 @@
 					<view class="itemNum" v-if="flNum != 0">{{flNum}}</view>
 				</view>
 			</view> -->
+			<view class="logOutBtn" @tap="toLogout">
+				<image :src="logoutIcon" style="width: 32rpx;height: 32rpx;vertical-align: middle;margin-right: 10rpx;" mode=""></image>
+				<text style="color: #1185f8;vertical-align: middle;">退出登錄</text>
+			</view>
 		</view>
-
-				<!-- <view class="logOutBtn" @tap="toLogout" v-if="hasLogin">
-					<image :src="logoutIcon" style="width: 32rpx;height: 32rpx;vertical-align: middle;margin-right: 10rpx;" mode=""></image>
-					<text style="color: #f75857;vertical-align: middle;">退出登錄</text>
-				</view> -->
-
-
 
 	</view>
 </template>
@@ -218,7 +215,19 @@ export default {
 			uni.setTabBarItem({ index: 3, text: this._i18n.t('menu.cart') }); */
 			uni.setTabBarItem({ index: 2, text: this._i18n.t('menu.my') });
 		},
-		toLogout() {},
+		toLogout() {
+			uni.showModal({
+				content: '確定要退出登錄嗎？',
+				success: e => {
+					if (e.confirm) {
+							this.$mStore.commit('logout');
+							this.$mStore.commit('logoutOrg');
+							this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
+					}
+				}
+			});
+
+		},
 		...mapMutations(['setNotifyNum', 'setCartNum']),
 		// 分享
     share() {
@@ -301,7 +310,8 @@ export default {
 		navTo(route) {
 			if (!route) return;
 			if(!this.hasLogin) {
-				uni.showToast({title:"您還未加入本社團！",icon:"none"});
+				this.$mRouter.push({ route: '/pages/public/register' });
+				//uni.showToast({title:"您還未加入本社團！",icon:"none"});
 			} else {
 				this.$mRouter.push({ route });
 			}
@@ -401,13 +411,16 @@ page {
 	}
 }
 .logOutBtn{
+	width: calc(100vw - 50rpx);
 	border-radius: 20rpx;
-	    padding: 28rpx 0;
-	    background-color: white;
-	    position: relative;
-	    top: 125rpx;
-	    text-align: center;
-	    font-weight: 500;
+	padding: 28rpx 0;
+	background-color: white;
+	position: relative;
+	top: 50rpx;
+	text-align: center;
+	font-weight: 500;
+	border: 1px solid #1185f8;
+	margin-left: 25rpx;
 }
 .userTitle{
 	color: white;

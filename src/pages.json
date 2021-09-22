@@ -11,6 +11,8 @@
 			"path": "pages/index/welcome/index",
 			"style": {
 				"navigationBarTitleText": "登錄",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "#ffffff",
 				"navigationStyle": "custom"
 			}
 		},
@@ -19,6 +21,17 @@
 			"path": "pages/index/mobile/index",
 			"style": {
 				"navigationBarTitleText": "手機號註冊",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "#ffffff",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/loading/index",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "#ffffff",
 				"navigationStyle": "custom"
 			}
 		},
@@ -45,30 +58,8 @@
 				}
 			}
 		},
-		// 我的活動列表
-		{
-			"path": "pages/activity/index",
-			"style": {
-				"enablePullDownRefresh": true,
-				"navigationBarTitleText": "我的活動",
-				"app-plus": {
-					"pullToRefresh": {
-						"support": true,
-						"color": "#fa436a",
-						"style": "default"
-					}
-				}
-			}
-		},
-		// 我的活動詳情详情
-		{
-			"path": "pages/activity/activity",
-			"style": {
-				"navigationBarTitleText": "活動詳情"
-			}
-		},
 		// 消息中心
-		{
+		/* {
 			"path": "pages/notify/notify",
 			"style": {
 				"enablePullDownRefresh": true,
@@ -82,20 +73,8 @@
 					}
 				}
 			}
-		},
-		// 分类
-		{
-			"path": "pages/category/category",
-			"style": {
-				"navigationBarTitleText": "社團",
-				"onReachBottomDistance": 50,
-				"app-plus": {
-					"bounce": "none",
-					"titleNView": false
-				}
-			}
-		},
-		// 购物车
+		}, */
+		/* // 购物车
 		{
 			"path": "pages/cart/cart",
 			"style": {
@@ -113,18 +92,7 @@
 					}
 				}
 			}
-		},
-		// 社團詳情
-		{
-			"path": "pages/stDetail/stDetail",
-			"style": {
-				"navigationBarTitleText": "社團詳情",
-				"app-plus": {
-					"titleNView": false,
-					"animationType": "slide-in-bottom"
-				}
-			}
-		},
+		}, */
 		// 我的
 		{
 			"path": "pages/profile/profile",
@@ -526,6 +494,46 @@
 				}
 			]
 		},
+		{
+			"root": "pages/stDetail",
+			"pages": [
+				{
+					"path": "stDetail",
+					"style": {
+						"navigationBarTitleText": "社團詳情",
+						"app-plus": {
+							"titleNView": false,
+							"animationType": "slide-in-bottom"
+						}
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/activity",
+			"pages": [
+				{
+					"path": "activity",
+					"style": {
+						"navigationBarTitleText": "活動詳情"
+					}
+				},
+				{
+					"path": "index",
+					"style": {
+						"enablePullDownRefresh": true,
+						"navigationBarTitleText": "我的活動",
+						"app-plus": {
+							"pullToRefresh": {
+								"support": true,
+								"color": "#fa436a",
+								"style": "default"
+							}
+						}
+					}
+				}
+			]
+		},
 		// 公共
 		{
 			"root": "pages/public",
@@ -794,7 +802,7 @@
 							"text": "首頁"
 						},
 						{
-							"pagePath": "pages/index/index",
+							"pagePath": "pages/loading/index",
 							"iconPath": "static/SOC_logo.png",
 							"selectedIconPath": "static/SOC_logo.png",
 							"text": "連心"

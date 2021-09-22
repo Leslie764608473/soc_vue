@@ -80,10 +80,10 @@
 				<text class="cell-more iconfont iconyou"></text>
 			</view>
 
-			<view class="logOutBtn" @tap="toLogout">
+			<!-- <view class="logOutBtn" @tap="toLogout">
 				<image :src="logoutIcon" style="width: 32rpx;height: 32rpx;vertical-align: middle;margin-right: 10rpx;" mode=""></image>
 				<text style="color: #f75857;vertical-align: middle;">退出登錄</text>
-			</view>
+			</view> -->
 
 		</view>
 
