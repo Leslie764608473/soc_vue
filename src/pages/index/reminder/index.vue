@@ -7,8 +7,8 @@
 					<image src="https://datalinc.oss-cn-shenzhen.aliyuncs.com/mall/images/2021-09/9zl6ky0ti81632134898000" mode=""></image>
 				</view>
 				<view class="reminderBody">
-					<p class="title">領取條件</p>
-					<p class="content">{{ reminderText }}</p>
+					<p class="title">【換領條件】</p>
+					<p class="content" @tap="navToProduct(reminderJson.id)">{{ reminderJson.note }}</p>
 					<p class="foot">最終解釋權歸香港山東社團總會所有</p>
 				</view>
 			</view>
@@ -24,7 +24,7 @@
 	export default {
 		data() {
 			return {
-				reminderText: '',
+				reminderJson: {},
 				reminderFlag: false,
 			}
 		},
@@ -38,7 +38,7 @@
 						if (res.code == 200){
 							if (Array.isArray(res.data)){
 								this.reminderFlag = true;
-								this.reminderText = res.data[0].name;
+								this.reminderJson = res.data[0];
 								this.$forceUpdate();
 							} else {
 								//uni.showToast({title: res.data, icon: "none"});
@@ -47,12 +47,15 @@
 					}).catch( err => {
 						console.log(err)
 					})
+			},
+			navToProduct(id){
+				this.reminderFlag = false;
+				let route = `/pages/product/product?id=${id}`;
+				this.$mRouter.push({ route });
 			}
 		},
 		mounted() {
-			//172623460
-			//this.$mStore.getters.userObj.id
-			//this.getReminder('172623460');
+
 		}
 	}
 </script>
@@ -111,13 +114,14 @@
 					margin-bottom: 20rpx;
 				}
 				.content {
+					white-space: pre-wrap;
 					margin-bottom: 30rpx;
 					line-height: 50rpx;
 					max-height: 250rpx;
 					overflow-y: auto;
 				}
 				.foot {
-					font-size: 28rpx;
+					font-size: 27rpx;
 					color: #1799fc;
 				}
 			}

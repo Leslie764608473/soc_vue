@@ -113,7 +113,7 @@ export default {
 					}
 					r.data.data.forEach((item)=>{
 						if((item.cover_pic == "" || item.cover_pic == null) && item.welfareDisplay && item.welfareDisplay.indexOf('src="') != -1) {
-							item.cover_pic = item.welfareDisplay.split('src="')[1].split('" />')[0];
+							item.cover_pic = encodeURI(item.welfareDisplay.split('src="')[1].split('" />')[0]);
 						}
 					});
 					this.dataList = [...this.dataList, ...r.data.data];

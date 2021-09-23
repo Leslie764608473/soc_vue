@@ -21,12 +21,12 @@
 						<button type="default" v-if="!hasLoginOrg && auditStatus == -1" class="bColor logoBtn" style="color: #ffa11b;">審核中</button>
 					</view>
 				</view>
-				<view class="st_jianjie" @tap="toSTDetail">
+				<view class="st_jianjie" @tap.stop="toSTDetail">
 					<view :class="{'turnOpen': downFlag}">
 						<view class="introBox" v-html="messageData.intro"></view>
-						<text @tap="toSTDetail" v-if="downFlag" class="lookBtn">查看詳情</text>
+						<text v-if="downFlag" class="lookBtn">查看詳情</text>
 					</view>
-					<uni-icons v-if="!downFlag" @tap="toSTDetail" type="arrowdown" color="#4f4f4f" class="downIcon" size="20"></uni-icons>
+					<uni-icons v-if="!downFlag" type="arrowdown" color="#4f4f4f" class="downIcon" size="20"></uni-icons>
 					<uni-icons v-if="downFlag" @tap="downFlagFn" type="arrowup" color="#4f4f4f" class="downIcon" size="20"></uni-icons>
 				</view>
 			</view>

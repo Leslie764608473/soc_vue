@@ -28,9 +28,9 @@
 									<uni-easyinput style="background: white;" disabled :inputBorder="false" type="text" v-model="registerSt" placeholder="請選擇所屬社團分會" />
 								</picker>
 							</view> -->
-							<uni-forms-item class="registerFormItem" :required="true" label="社團分會" name="server_fh_id">
+							<uni-forms-item class="registerFormItem" :required="true" :label="registerOrg_id==47?'相關社團':'社團分會'" name="server_fh_id">
 								<picker @change="bindPickerChange" style="margin-left: -15rpx;" :value="serviceIndex" :range="serviceNameArr">
-									<uni-easyinput style="background: white;" class="disabledPicker" disabled :inputBorder="false" type="text" v-model="registerSt" placeholder="請選擇所屬社團分會" />
+									<uni-easyinput style="background: white;" class="disabledPicker" disabled :inputBorder="false" type="text" v-model="registerSt" :placeholder="parseFloat(registerOrg_id) == 47?'請選擇相關社團':'請選擇社團分會'" />
 								</picker>
 							</uni-forms-item>
 							<uni-forms-item v-if="item.type == '基本信息'" class="registerFormItem" :required="item.isRequired==1?true:false" :label="item.nameZh" :name="item.nameEn" v-for="(item,index) in registerItems" :key="index">
@@ -71,9 +71,21 @@
 									<uni-data-checkbox @change="priority_contactChange" v-model="registerParams[item.nameEn]" :localdata="JSON.parse(item.selectContent)" ></uni-data-checkbox>
 								</view>
 								<view v-else-if="item.nameEn == 'address'">
-									<uni-data-checkbox v-model="addressType" :localdata="JSON.parse(item.selectContent)" ></uni-data-checkbox>
-									<view class="line10"></view>
-									<uni-easyinput style="border-bottom: 1px solid #dedede;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams[item.nameEn]" :placeholder="'請輸入'+addressType+'地址'" />
+									<uni-data-checkbox v-model="addressType" v-if="item.selectContent" :localdata="JSON.parse(item.selectContent)" ></uni-data-checkbox>
+									<view class="line10" v-if="item.selectContent"></view>
+									<uni-easyinput v-if="registerOrg_id != 47" style="border-bottom: 1px solid #dedede;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams[item.nameEn]" :placeholder="'請輸入'+addressType+'地址'" />
+									<view v-if="registerOrg_id == 47">
+										<uni-forms-item class="registerFormItem" :required="item_.isRequired==1?true:false" :label="item_.nameZh" :name="item_.nameEn" v-for="(item_,index_) in item.nextDic" :key="index_">
+											<picker v-if="item_.nameEn == 'region_name'" @change="regionNameChange" style="margin-left: -15rpx;" :value="regionNameIndex" rangeKey="name" :range="regionNameArr">
+												<uni-easyinput style="background: white;" class="disabledPicker" disabled :inputBorder="false" type="text" v-model="registerParams['region_name']" :placeholder="'請選擇'+item_.nameZh" />
+											</picker>
+											<picker v-else-if="item_.nameEn == 'xq'" @change="xqNameChange" style="margin-left: -15rpx;" :value="xqNameIndex" :range="xqNameArr" rangeKey="name">
+												<uni-easyinput style="background: white;" class="disabledPicker" disabled :inputBorder="false" type="text" v-model="registerParams['xq']" :placeholder="'請選擇'+item_.nameZh" />
+											</picker>
+											<uni-easyinput v-else style="border-bottom: 1px solid #dedede;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams[item_.nameEn]" :placeholder="'請輸入'+item_.nameZh" />
+										</uni-forms-item>
+									</view>
+
 								</view>
 								<view v-else-if="item.nameEn == 'special_name'">
 									<uni-easyinput style="border-bottom: 1px solid #dedede;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams[item.nameEn]" placeholder="「例：太平紳士」" />
@@ -156,12 +168,12 @@
 					</view>
 				</uni-collapse-item>
 			</uni-collapse>
-			<view class="signBox">
+			<view class="signBox" style="padding-bottom: 10rpx;">
 				<view class="signTitle">申請日期</view>
 				<view class="signVlaue"><uni-dateformat format="yyyy年MM月dd日" :date="registerDate"></uni-dateformat></view>
 
-				<view class="signTitle">身份證照片 ( 正面 )</view>
-				<view class="grace-idcard-items">
+				<view class="signTitle" v-if="registerOrg_id != 47">身份證照片 ( 正面 )</view>
+				<view class="grace-idcard-items" v-if="registerOrg_id != 47">
 					<view class="grace-idcard-uper-btn" @tap="selectImg1">
 						<view class="img"><image :src="camera" mode="widthFix" /></view>
 						<view class="text">拍攝或選擇照片</view>
@@ -170,8 +182,8 @@
 						<image :src="idCard1"  @tap="previewImg1" mode="widthFix"></image>
 					</view>
 				</view>
-				<view class="signTitle">身份證照片 ( 背面 )</view>
-				<view class="grace-idcard-items">
+				<view class="signTitle" v-if="registerOrg_id != 47">身份證照片 ( 背面 )</view>
+				<view class="grace-idcard-items" v-if="registerOrg_id != 47">
 					<view class="grace-idcard-uper-btn" @tap="selectImg2">
 						<view class="img"><image :src="camera" mode="widthFix" /></view>
 						<view class="text">拍攝或選擇照片</view>
@@ -188,17 +200,27 @@
 					 @touchcancel='cancel' @longtap='tap' disable-scroll='true' @error='error'></canvas>
 				</view>
 				<!-- 底部协议 -->
-				<view class="footer-protocol" style="flex-wrap: wrap;justify-content:flex-start">
+				<view style="margin-bottom: 20rpx;">
 					<text
 						@tap="isAppAgreementDefaultSelect"
 						class="cuIcon"
+						style="margin-right: 10rpx;"
 						:class="appAgreementDefaultSelect ? `text-${themeColor.name} cuIcon-radiobox` : 'cuIcon-round'"
 					></text>
 					<text class="content">我已閱讀確認並同意</text>
 					<!-- 协议地址 -->
-					<navigator :class="'text-' + themeColor.name" :url="'/pages/set/about/detail?orgId='+registerOrg_id+'&title=成員須知'" open-type="navigate">《{{orgChoseName}}成員須知》</navigator>
+					<navigator style="display: inline;" :class="'text-' + themeColor.name" :url="'/pages/set/about/detail?orgId='+registerOrg_id+'&title=成員須知'" open-type="navigate">《{{orgChoseName}}成員須知》</navigator>
 					<text>和</text>
-					<navigator :class="'text-' + themeColor.name" :url="'/pages/set/about/detail?orgId='+registerOrg_id+'&title=個人信息收集聲明'" open-type="navigate">《個人信息收集聲明》</navigator>
+					<navigator style="display: inline;" :class="'text-' + themeColor.name" :url="'/pages/set/about/detail?orgId='+registerOrg_id+'&title=個人信息收集聲明'" open-type="navigate">《個人信息收集聲明》</navigator>
+				</view>
+				<view style="margin-bottom: 20rpx;" v-if="registerOrg_id == 47 && registerSt != '香港河北聯誼會'">
+					<text
+						@tap="isAppAgreementDefaultSelectNew"
+						style="margin-right: 10rpx;"
+						class="cuIcon"
+						:class="appAgreementDefaultSelect_ ? `text-${themeColor.name} cuIcon-radiobox` : 'cuIcon-round'"
+					></text>
+					<text class="content">本人同時申請加入香港河北聯誼會</text>
 				</view>
 			</view>
 
@@ -275,9 +297,20 @@ export default {
 			level: 3,
 			addArrAll: [],
 			appAgreementDefaultSelect: false,//this.$mSettingConfig.appAgreementDefaultSelect, // 是否允许点击登录按钮
+			appAgreementDefaultSelect_: false,
 			closeRegisterPromoCode: this.$mSettingConfig.closeRegisterPromoCode, // 是否允许点击登录按钮
 			registerParams: {},
 			registerItems: [],
+			xqNameArr: [{"value": "中西區","name": "中西區"},{"value": "東區","name": "東區"},{"value": "南區","name": "南區"},{"value": "灣仔區","name": "灣仔區"},
+			{"value": "九龍城區","name": "九龍城區"},{"value": "觀塘區","name": "觀塘區"},{"value": "深水埗區","name": "深水埗區"},{"value": "黃大仙區","name": "黃大仙區"},
+			{"value": "油尖旺區","name": "油尖旺區"},{"value": "離島區","name": "離島區"},{"value": "葵青區","name": "葵青區"},{"value": "北區","name": "北區"},
+			{"value": "西貢區","name": "西貢區"},{"value": "沙田區","name": "沙田區"},{"value": "大埔區","name": "大埔區"},{"value": "荃灣區","name": "荃灣區"},
+			{"value": "屯門區","name": "屯門區"},{"value": "元朗區","name": "元朗區"}],
+			xqNameIndex: 0,
+			xqNameStr: "",
+			regionNameArr: [{"value": "香港島","name":"香港島"},{"value": "九龍","name":"九龍"},{"value": "新界","name":"新界"}],
+			regionNameIndex: 0,
+			regionNameStr: "",
 			genderArr: [{"value": "男","text": "男"	},{"value": "女","text": "女"}],
 			wechat_numArr: [{"value": "微信","text": "微信"	},{"value": "WhatsApp","text": "WhatsApp"}],
 			addressArr: [{"value": "辦事處","text": "辦事處"	},{"value": "住宅","text": "住宅"}],
@@ -397,6 +430,18 @@ export default {
 				})
 				this.$forceUpdate();
 			});
+		},
+		xqNameChange(e) {
+			this.xqNameIndex = e.target.value;
+			this.xqNameStr = this.xqNameArr[parseFloat(e.target.value)].name;
+			this.registerParams['xq'] = this.xqNameArr[parseFloat(e.target.value)].name;
+			this.$forceUpdate();
+		},
+		regionNameChange(e) {
+			this.regionNameIndex = e.target.value;
+			this.regionNameStr = this.regionNameArr[parseFloat(e.target.value)].name;
+			this.registerParams['region_name'] = this.regionNameArr[parseFloat(e.target.value)].name;
+			this.$forceUpdate();
 		},
 		bindPickerChange(e) {
 			this.serviceIndex = e.target.value;
@@ -672,6 +717,10 @@ export default {
       // 是否选择协议
       this.appAgreementDefaultSelect = !this.appAgreementDefaultSelect;
     },
+		isAppAgreementDefaultSelectNew() {
+			// 是否选择协议
+			this.appAgreementDefaultSelect_ = !this.appAgreementDefaultSelect_;
+		},
 		...mapMutations(['login']),
 		navBack() {
 			this.$mRouter.back();
@@ -738,6 +787,16 @@ export default {
 						this.btnLoading = false;
 						return false;
 				}
+				if(item.nextDic.length>0) {
+					item.nextDic.forEach((item_)=>{
+						if(item_.isRequired==1 && (this.registerParams[item_.nameEn] == undefined || this.registerParams[item_.nameEn] == null || this.registerParams[item_.nameEn] == "")) {
+							isRequiredF = false;
+							this.$mHelper.toast(item_.nameZh+'不能為空!');
+							this.btnLoading = false;
+							return false;
+						}
+					});
+				}
 			});
 			for(let i=0;i<this.registerItems.length-1;i++) {
 				let nameZh = this.registerItems[i].nameZh;
@@ -757,7 +816,7 @@ export default {
 			}
 			if(!this.IsHKID(this.registerParams.identity_num)) {
 				uni.showToast({
-					title: '香港身份證號碼格式錯誤',
+					title: '請至少輸入首4位數字包括英文字母',
 					icon: "none",
 					duration: 1500,
 					mask: true
@@ -1018,7 +1077,7 @@ export default {
 		background-color: white;
 		margin-left: 22rpx;
 		margin-top: 30rpx;
-		padding: 10rpx 22rpx 0rpx;
+		padding: 10rpx 22rpx 10rpx;
 		.signVlaue{
 			font-size: 30rpx;
 			margin: 20rpx 0;

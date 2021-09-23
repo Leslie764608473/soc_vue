@@ -41,7 +41,10 @@
 				</view>
 			</view>
 			<view class="lianxiBox" style="margin-bottom: 50rpx;" v-if="serviceListArr.length>1">
-				<view class="detailTitle">社團分會 <text style="color: #0f7df7;margin-left: 20rpx;">{{serviceListArr.length-1}}</text></view>
+				<view class="detailTitle">
+					<text v-if="messageData.orgId == '47'">相關社團</text>
+					<text v-else>社團分會</text>
+					<text style="color: #0f7df7;margin-left: 20rpx;">{{serviceListArr.length-1}}</text></view>
 				<view class="imgBoxs">
 					<view style="padding: 15rpx 0;" :style="{width:90*(serviceListArr.length-1)+'vw'}">
 						<view class="imgBox imgBoxTwo" v-if="index != 0" v-for="(item,index) in serviceListArr" :key="index">
@@ -111,7 +114,6 @@ import moment from '@/common/moment';
 				serviceListArr: [],
 				current: 0,
 				mode: 'round',
-				messageData: this.$mStore.getters.messageData
 			};
 		},
 		created() {
@@ -120,7 +122,7 @@ import moment from '@/common/moment';
 		onLoad() {
 			let orgLogo =  this.$mStore.getters.messageData.orgLogo;
 			this.NowLogo = orgLogo;
-			
+
 			this.getNoticeFn();
 		},
 		methods: {

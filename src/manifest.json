@@ -198,7 +198,8 @@
     },
     "h5" : {
         "router" : {
-            "mode" : "history"
+            "mode" : "history",
+            "base" : "./"
         },
         // history模式地址不带#
         "async" : {

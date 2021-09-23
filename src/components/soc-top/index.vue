@@ -2,7 +2,7 @@
 	<view class="rf-search-bar">
 		<view class="header" :style="{width: width+'px', marginTop: inputTop+'px'}"></view>
 		<view class="contentBox">
-			<image class="logo" src="../../static/shandong/logo.jpg"></image>
+			<!-- <image class="logo" src="../../static/shandong/logo.jpg"></image> -->
 			<view class="logoLeft">
 				<view class="st_name">香港山東社團總會</view>
 			</view>

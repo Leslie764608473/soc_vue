@@ -21,6 +21,7 @@ export default {
 		...mapMutations(['setCartNum', 'setNotifyNum']),
 		// 数据初始化
 		async initData() {
+			this.$mStore.commit('setOrgList',[]);
 			uni.setTabBarStyle({
 				selectedColor: this.themeColor.color,
 				borderStyle: 'white'
