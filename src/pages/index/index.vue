@@ -87,7 +87,7 @@
 		onShareAppMessage: function() {
 			return {
 			 title: 'soc連心',
-			 path: '/pages/index/index?orgId=' + this.$mStore.getters.orgId,
+			 path: '/pages/index/index?choseSoc=1&orgId=' + this.$mStore.getters.orgId,
 			}
 		},
 		// 下拉刷新
@@ -160,6 +160,9 @@
 				}
 			}
 		},
+		watch: {
+			
+		},
 		methods: {
 			getOrgListFn() {
 				this.$http.get(getOrgList,{mobile:this.userInfo.mobile}).then((r) => {
@@ -224,7 +227,7 @@
 			backAll() {
 				uni.setNavigationBarColor({
 				    frontColor: '#ffffff',
-				    backgroundColor: '#ff0000',
+				    backgroundColor: '#ffffff',
 				    animation: {
 				        duration: 200,
 				        timingFunc: 'easeIn'
@@ -237,7 +240,7 @@
 				if(this.choseSoc == 1) {
 					uni.setNavigationBarColor({
 					    frontColor: '#ffffff',
-					    backgroundColor: '#ff0000',
+					    backgroundColor: '#ffffff',
 					    animation: {
 					        duration: 400,
 					        timingFunc: 'easeIn'
@@ -252,7 +255,7 @@
 				this.initMessage();
 				uni.setNavigationBarColor({
 						frontColor: '#000000',
-						backgroundColor: '#ff0000',
+						backgroundColor: '#ffffff',
 						animation: {
 								duration: 400,
 								timingFunc: 'easeIn'

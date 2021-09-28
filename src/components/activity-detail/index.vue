@@ -74,7 +74,6 @@
 				<view class="input-item" >
 					<text class="tit">姓名</text>
 					<input
-						type="number"
 						v-model="activityParams.name_zh"
 						placeholder="請輸入您的姓名"
 					/>
@@ -82,7 +81,6 @@
 				<view class="input-item" >
 					<text class="tit">英文名</text>
 					<input
-						type="number"
 						v-model="activityParams.name_en"
 						placeholder="請輸入您的英文名"
 					/>
@@ -121,7 +119,6 @@
 					</picker>
 					<input
 					v-else
-						type="number"
 						v-model="activityParams[item.value]"
 						:placeholder="'請輸入'+item.label"
 					/>
@@ -166,6 +163,7 @@
 			</button>
 			<button
 			v-if="product.webStartOr != 0 && showBm == 1"
+			class="confirmBtn"
 				style="width: 92vw;
     color: #999999;
     background: #ffffff;
@@ -210,7 +208,8 @@
 		data() {
 			return {
 				btnLoading: false,
-				hasLogin: this.$mStore.getters.hasLoginOrg,
+				hasLoginOrg: this.$mStore.getters.hasLoginOrg,
+				hasLogin: this.$mStore.getters.hasLogin,
 				dqIndex: 0,
 				zqIndex: 0,
 				xqIndex: 0,
@@ -251,6 +250,12 @@
 		},
 		async onShareAppMessage () {
 
+		},
+		onLoad(options) {
+			/* let orgId = options.orgId;
+			if(orgId && orgId != this.$mStore.getters.orgId) {
+				this.$mStore.commit('setOrgId',orgId);
+			} */
 		},
 		filters: {
 			time(val) {
@@ -302,6 +307,9 @@
 							if(r.data.status == 0) {
 								this.$mHelper.toast(r.data.msg,6000);
 							} else if (r.data.status == 1) {
+								let pages = getCurrentPages(); // 当前页面
+								let beforePage = pages[pages.length - 2]; // 上一页
+								beforePage.onPullDownRefresh(); // 执行上一页的onLoad方法
 								this.$mHelper.toast("報名成功！有關資料稍後會專人核對，如有任何查詢，可於辦公時間聯繫當值職員聯絡。請注意：如有重複提交，資料僅以第一次提交為準",10000);
 							}
 					})
@@ -311,8 +319,13 @@
 			},
 			simpleWebSign() {
 				if(!this.hasLogin) {
-					this.$mRouter.push({ route: '/pages/public/register' });
+					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
 					return false;
+				} else {
+					if(!this.hasLoginOrg) {
+						this.$mRouter.push({ route: '/pages/public/register' });
+						return false;
+					}
 				}
 				if(parseFloat(this.bmFlag) == 1) {
 					this.signUpActivityFn();
@@ -552,6 +565,13 @@
 
 
 	}
+
+
+	.confirmBtn::after{
+		border-radius: 40rpx !important;
+		width: 199%;
+	}
+
 }
 </style>
 <style>

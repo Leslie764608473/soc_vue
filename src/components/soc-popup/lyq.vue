@@ -87,7 +87,7 @@ export default {
 				return false;
 			}
 			if(this.lyqParamsSt == "") {
-				this.$mHelper.toast("請先選擇領取機構");
+				this.$mHelper.toast("請選擇福利領取機構");
 				return false;
 			}
 		},
@@ -210,7 +210,7 @@ export default {
 		},
 		to_receive() {
 			if(this.lyqParamsSt == "" || this.lyqParamsSt == null) {
-					this.$mHelper.toast("請選擇領取服務處");
+					this.$mHelper.toast("請選擇福利領取機構");
 					return false;
 			}
 			if(this.lyqParams.sub_date == "" || this.lyqParams.sub_date == null) {
@@ -249,6 +249,11 @@ export default {
 				this.btnLoading = false;
 				this.receive_falg = 1;
 				if(res.code == 200) {
+
+					let pages = getCurrentPages(); // 当前页面
+					let beforePage = pages[pages.length - 2]; // 上一页
+					beforePage.onPullDownRefresh(); // 执行上一页的onLoad方法
+
 					this.$mHelper.toast("領取成功！");
 					setTimeout(()=>{
 						this.$parent.isLyqPopupShow = false;

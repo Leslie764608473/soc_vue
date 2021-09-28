@@ -112,17 +112,7 @@
 
 		},
 		created() {
-			this.getAddreeData();
-			setTimeout(()=>{
-				this.product.selected_field.forEach((item)=>{
-						if(item.show_status == 1) {
-							this.activityParams[item.value] = "";
-							if(item.value == "sex") {
-								this.activityParams["gender"] = "男";
-							}
-						}
-				});
-			},1000);
+			
 		},
     methods: {
 			showBmFn() {
@@ -146,81 +136,8 @@
 				this.zqValue= "";
 				this.xqValue= "";
 			},
-			signUpActivityFn() {
-				this.$http
-					.post(`${signUpActivity}`,{},{params:{id:this.product.id}})
-					.then(async r => {
-							if(r.data.status == 0) {
-								this.$mHelper.toast(r.data.msg,6000);
-							} else if (r.data.status == 1) {
-								this.$mHelper.toast("報名成功！有關資料稍後會專人核對，如有任何查詢，可於辦公時間聯繫當值職員聯絡。請注意：如有重複提交，資料僅以第一次提交為準",10000);
-							}
-					})
-					.catch(err => {
-
-					});
-			},
-			simpleWebSign() {
-				if(!this.hasLogin) {
-					this.$mRouter.push({ route: '/pages/public/register' });
-					return false;
-				}
-				if(parseFloat(this.bmFlag) == 1) {
-					this.signUpActivityFn();
-					return false;
-				}
-				if(this.activityParams.mobile == "" || this.activityParams.mobile == null) {
-					this.$mHelper.toast('請輸入手提電話！');
-					return false;
-				}
-				var fill_status = true;
-				this.product.selected_field.forEach((item)=>{
-						if(item.fill_status == 1) {
-							if(item.value == "sex" && this.activityParams["gender"] == "") {
-								this.$mHelper.toast('請選擇性別！');
-								fill_status = false;
-								return false;
-							}
-							if(item.value != "sex" && this.activityParams[item.value] == "") {
-								this.$mHelper.toast('請輸入'+item.label);
-								fill_status = false;
-								return false;
-							}
-						}
-				});
-
-				if(!fill_status) {
-
-					return false;
-				}
-				 this.activityParams.webActivityId = this.product.id;
-				 this.activityParams.activityId = this.product.id;
-				 if(this.date.indexOf("-") != -1) {
-					 this.activityParams.bir_year = this.date.split("-")[0];
-					 this.activityParams.bir_month = this.date.split("-")[1];
-					 this.activityParams.bir_day = this.date.split("-")[2];
-				 }
-
-				 this.activityParams.region_name = this.dqValue;
-				 this.activityParams.central_district_name = this.zqValue;
-				 this.activityParams.xq_name = this.xqValue;
-
-				 this.activityParams.region_code = this.dqArr[this.dqIndex].code;
-				 this.activityParams.central_district_code = this.zqArr[this.zqIndex].code;
-				 this.activityParams.xq_number = this.xqArr[this.xqIndex].code;
-
-				this.$http
-					.post(`${simpleWebSign}`,this.activityParams)
-					.then(async r => {
-							if(r.code == 200) {
-								this.$mHelper.toast("報名成功！有關資料稍後會專人核對，如有任何查詢，可於辦公時間聯繫當值職員聯絡。請注意：如有重複提交，資料僅以第一次提交為準",10000);
-								this.clearData();
-							}
-					})
-					.catch(err => {
-
-					});
-			},
+			signUpActivityFn() {},
+			simpleWebSign() {},
 			dqChange(e) {
 				this.dqIndex = e.target.value;
 				this.dqValue = this.dqArr[this.dqIndex].namec;

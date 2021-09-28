@@ -19,8 +19,8 @@
 			<view class="detailTitle">社團簡介</view>
 			<view class="introBox">{{messageData.intro}}</view>
 		</view>
-		<view class="lineBox"></view>
-		<view class="lianxiBox">
+		<view class="lineBox" v-if="showLxFlag"></view>
+		<view class="lianxiBox" v-if="showLxFlag">
 			<view class="detailTitle">聯繫方式</view>
 			<view class="imgBox imgBoxOne">
 				<text class="imgBoxName">{{serviceListArr[0].name}}</text>
@@ -40,7 +40,7 @@
 				</view>
 				</view>
 			</view>
-			<view class="lianxiBox" style="margin-bottom: 50rpx;" v-if="serviceListArr.length>1">
+			<view class="lianxiBox" style="margin-bottom: 50rpx;" v-if="serviceListArr.length>1 && showLxFlag">
 				<view class="detailTitle">
 					<text v-if="messageData.orgId == '47'">相關社團</text>
 					<text v-else>社團分會</text>
@@ -108,12 +108,14 @@ import moment from '@/common/moment';
 		},
 		data() {
 			return {
+				showLxFlag: false,
 				NowLogo: null,
 				messageData: this.$mStore.getters.messageData,
 				nodeDetail : {},
 				serviceListArr: [],
 				current: 0,
 				mode: 'round',
+				hasLoginOrg: this.$mStore.getters.hasLoginOrg,
 			};
 		},
 		created() {
@@ -122,6 +124,17 @@ import moment from '@/common/moment';
 		onLoad() {
 			let orgLogo =  this.$mStore.getters.messageData.orgLogo;
 			this.NowLogo = orgLogo;
+			if(parseFloat(this.$mStore.getters.orgId) == 47) {
+				// 河北社团
+				if(this.hasLoginOrg) {
+					this.showLxFlag = true;
+				} else {
+					this.showLxFlag = false;
+				}
+			} else {
+				this.showLxFlag = true;
+			}
+
 
 			this.getNoticeFn();
 		},

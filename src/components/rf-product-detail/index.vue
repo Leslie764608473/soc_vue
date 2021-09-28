@@ -318,7 +318,8 @@
 				currentSkuName: null,
 				currentCartCount: 1,
 				evaluateList: [],
-				hasLogin: this.$mStore.getters.hasLoginOrg,
+				hasLoginOrg: this.$mStore.getters.hasLoginOrg,
+				hasLogin: this.$mStore.getters.hasLogin,
 				orgUserInfo: this.$mStore.getters.orgUserInfo,
 				cartNum: uni.getStorageSync('cartNum'),
 				addressTypeList: this.$mConstDataConfig.addressTypeList,
@@ -437,10 +438,14 @@
 			},
 			add_yhq(type) {
 				if(!this.hasLogin) {
-					this.$mRouter.push({ route: '/pages/public/register' });
-					//this.$mRouter.push({ route: '/pages/public/logintype' });
+					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
 					return false;
-				};
+				} else {
+					if(!this.hasLoginOrg) {
+						this.$mRouter.push({ route: '/pages/public/register' });
+						return false;
+					}
+				}
 				if(parseInt(type) == 1) {
 					this.$http
 						.post(addCoupon,{},{params:{
@@ -486,10 +491,14 @@
 			},
 			add_lyq(type) {
 				if(!this.hasLogin) {
-					this.$mRouter.push({ route: '/pages/public/register' });
-					//this.$mRouter.push({ route: '/pages/public/logintype' });
+					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
 					return false;
-				};
+				} else {
+					if(!this.hasLoginOrg) {
+						this.$mRouter.push({ route: '/pages/public/register' });
+						return false;
+					}
+				}
 				if(parseInt(type) == 1) {
 					this.isLyqPopupShow = true;
 					this.getServeArr(this.orgUserInfo.memberId,this.product.id);

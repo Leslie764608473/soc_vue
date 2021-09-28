@@ -25,6 +25,8 @@ const getSessionKeyOrOpenId = '/soc/sso/getSessionKeyOrOpenId';
 const wechatLogin = '/soc/sso/wechatLogin';
 const bindMobile = '/soc/sso/bindMobile';
 const loginByAuthCode = '/soc/sso/loginByAuthCode';
+
+const getNative = '/soc/sso/getNative';
 export {
 	getRegister,
 	serviceList,
@@ -40,5 +42,6 @@ export {
 	getSessionKeyOrOpenId,
 	wechatLogin,
 	bindMobile,
-	loginByAuthCode
+	loginByAuthCode,
+	getNative
 };

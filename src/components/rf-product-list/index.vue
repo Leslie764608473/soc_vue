@@ -47,7 +47,7 @@
 						<view class="bottomText">
 							<text class="bottomName">領取時間: {{item.promotionStartTime | timeFl}}到{{item | timeFlEnd}}</text>
 						</view>
-						<view v-if="hasLogin && item.cartItemStatus != 1" class="statusBox">
+						<view v-if="item.cartItemStatus != 1" class="statusBox">
 							<text class="lqOk" v-if="item.getReceiveStatus == 1 || item.getStatus == 1">已領取</text>
 							<text class="lqNo" v-if="item.getReceiveStatus != 1 && item.getStatus != 1">未領取</text>
 							<image v-if="item.getReceiveStatus == 1 || item.getStatus == 1" style="width: 40rpx;height: 40rpx;float: right;margin-right: 20rpx;" src="../../static/shandong/erCodeIcon.png" mode=""></image>
@@ -70,20 +70,24 @@
 						<view class="imgBox" v-if="item.cover_pic" :style="{'background-image':'url('+item.cover_pic+')'}" ></view>
 						<image v-else :src="errorImage" mode="widthFix"></image>
 					</view>
-					<view class="rf-pro-content" :style="{'justify-content': hasLogin?'start !important':'space-between !important'}">
+					<view class="rf-pro-content" style="justify-content:start !important">
 						<view class="rf-pro-tit" style="font-size: 28rpx;">{{ item.title }}</view>
-						<view  class="bottomText" v-if="!hasLogin">
+						<!-- <view  class="bottomText" v-if="!hasLoginOrg">
 							<text class="bottomName">{{item.activity_type}}</text>
 							<text class="right">{{item.pub_time | time}}</text>
-						</view>
-						<view v-if="hasLogin" class="statusBox" style="margin-top: 20rpx;">
+						</view> -->
+						<view class="statusBox" style="margin-top: 20rpx;">
 							<text class="hd_noStart" v-if="item.apply_status < 0">未報名</text>
-							<text class="hd_over" v-if="item.apply_status == 0">正在審核中</text>
-							<text class="hd_noStart" v-if="item.apply_status == 1">審核已通過</text>
+							<text class="hd_noStart" v-if="item.apply_status == 0">正在審核中</text>
+							<text class="hd_noStart" v-if="item.apply_status == 1">已報名</text>
 							<text class="hd_no" v-if="item.apply_status == 2">審核未通過</text>
-							<text class="hd_noStart" v-if="item.apply_status == 4">活動未開始報名</text>
-							<text class="hd_over" v-if="item.apply_status == 3">活動已結束</text>
+							<text class="hd_noStart" v-if="item.activity_timeFilter">活動未開始報名</text>
+							<text class="hd_over" v-if="item.apply_status == 3">報名活動已結束</text>
+							<text class="hd_over" v-if="item.apply_status == 5">活動已結束</text>
 						</view>
+						<!-- <view v-else class="statusBox" style="margin-top: 20rpx;">
+							<text class="hd_noStart" v-if="item.activity_timeFilter">活動未開始報名</text>
+						</view> -->
 					</view>
 				</view>
 				<!--活動列表-->
@@ -147,9 +151,15 @@ export default {
 	components: {
 		rfAttrContent
 	},
+	onLoad(options) {
+		let orgId = options.orgId;
+		if(orgId && orgId != this.$mStore.getters.orgId) {
+			this.$mStore.commit('setOrgId',orgId);
+		}
+	},
 	created() {
 		setTimeout(()=>{
-			this.hasLogin = this.$mStore.getters.hasLogin;
+			this.hasLoginOrg = this.$mStore.getters.hasLoginOrg;
 		},500);
 	},
 	data() {
@@ -158,7 +168,7 @@ export default {
       moneySymbol: this.moneySymbol,
 			productDetail: {},
 			errorImage: this.$mAssetsPath.errorImage,
-			hasLogin : this.$mStore.getters.hasLogin,
+			hasLoginOrg : this.$mStore.getters.hasLoginOrg,
 			userInfo: this.$mStore.getters.userObj,
 		};
 	},

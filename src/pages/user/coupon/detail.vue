@@ -183,6 +183,11 @@ export default {
 					id: item.id
 				})
 				.then(() => {
+					
+					let pages = getCurrentPages();
+					let prevPage = pages[pages.length - 2];
+					prevPage.$vm.initData();
+					
 					this.$mHelper.toast('领取成功');
 					setTimeout(() => {
 						this.couponList = [];

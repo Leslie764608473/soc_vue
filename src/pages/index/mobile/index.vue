@@ -115,8 +115,7 @@ export default {
 		const time =
 			moment().valueOf() / 1000 - uni.getStorageSync('loginSmsCodeTime');
 		if (time < 60) {
-			this.codeSeconds =
-				this.$mConstDataConfig.sendCodeTime - parseInt(time, 10);
+			this.codeSeconds = this.$mConstDataConfig.sendCodeTime - parseInt(time, 10);
 			this.handleSmsCodeTime(this.codeSeconds);
 		} else {
 			this.codeSeconds = this.$mConstDataConfig.sendCodeTime;
@@ -135,10 +134,12 @@ export default {
 				this.$mHelper.toast(this.$mGraceChecker.error);
 				return;
 			}
+			//type值 只要orgid是0就无所谓   不是时候，1是注册2是登录
 			await this.$http
 				.get(smsCode, {
 					telephone: this.reqBody['mobile'],
-					type : 1
+					type : 1,
+					orgId : 0
 				})
 				.then(r => {
 					if (r.data) {

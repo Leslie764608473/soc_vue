@@ -35,6 +35,7 @@
  * @copyright 2019
  */
 import { productDetail } from '@/api/product';
+import { getMessage } from '@/api/userInfo';
 import rfProductDetail from '@/components/rf-product-detail';
 import rfBackTop from '@/components/rf-back-top';
 import rfNoData from '@/components/rf-no-data';
@@ -54,7 +55,8 @@ export default {
 			currentUrl: '',
 			navDetailShow: false,
 			appName: this.$mSettingConfig.appName,
-			get_receive_status: 0
+			get_receive_status: 0,
+			orgId: this.$mStore.getters.orgId,
 		};
 	},
 	// #ifndef MP
@@ -68,7 +70,22 @@ export default {
 	onPageScroll(e) {
 		this.scrollTop = e.scrollTop;
 	},
+	onBackPress(e) {
+		console.log(e);
+	},
+	onShareAppMessage() {
+		return {
+		 title: 'soc連心',
+		 path: '/pages/product/product?orgId=' + this.$mStore.getters.orgId+"&id="+this.productId,
+		}
+	},
 	async onLoad(options) {
+		let orgId = options.orgId;
+		if(orgId) {
+			this.$mStore.commit('setOrgId',orgId);
+			this.initMessage(orgId);
+		}
+
 		this.productId = options.id;
 		this.userInfo = uni.getStorageSync('userInfo') || {};
 		await this.initData();
@@ -78,13 +95,24 @@ export default {
 		hideNavDetail() {
 			this.navDetailShow = false;
 		},
+		initMessage(orgId) {
+			this.$http.post(`${getMessage}`,{},{params: {orgId : orgId}})
+			.then( r => {
+				this.$mStore.commit('setMessageData',r.data.data[0]);
+				this.messageData = r.data.data[0];
+				this.$forceUpdate();
+			})
+			.catch(err => {
+		
+			});
+		},
 		// 数据初始化
 		async initData() {
-      if (this.userInfo.promo_code) {
-        this.currentUrl = `${this.$mConfig.hostUrl}/pages/product/product?id=${this.productId}&promo_code=${this.userInfo.promo_code}`;
+      /* if (this.userInfo.promo_code) {
+        this.currentUrl = `${this.$mConfig.hostUrl}/pages/product/product?orgId=${this.orgId}&id=${this.productId}&promo_code=${this.userInfo.promo_code}`;
       } else {
-        this.currentUrl = `${this.$mConfig.hostUrl}/pages/product/product?id=${this.productId}`;
-      }
+        this.currentUrl = `${this.$mConfig.hostUrl}/pages/product/product?orgId=${this.orgId}&id=${this.productId}`;
+      } */
 			this.hasLogin = this.$mStore.getters.hasLogin;
 			await this.getProductDetail();
 		},
@@ -112,7 +140,7 @@ export default {
 					this.$forceUpdate();
 					//this.productDetail.covers = [this.productDetail.pic,this.productDetail.pic,this.productDetail.pic]
 					uni.setNavigationBarTitle({ title: "" });
-					await this.$mHelper.handleWxH5Share(this.appName, r.data.name, this.currentUrl, r.data.list.pic);
+					//await this.$mHelper.handleWxH5Share(this.appName, r.data.name, this.currentUrl, r.data.list.pic);
 				})
 				.catch(err => {
 					this.loading = false;

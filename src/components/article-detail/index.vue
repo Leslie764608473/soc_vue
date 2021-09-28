@@ -86,6 +86,12 @@
 				return moment(val).format('YYYY-MM-DD HH:mm');
 			}
 		},
+		onLoad(options) {
+			let orgId = options.orgId;
+			if(orgId && orgId != this.$mStore.getters.orgId) {
+				this.$mStore.commit('setOrgId',orgId);
+			}
+		},
 		computed: {
 
 		},

@@ -21,6 +21,7 @@
 </template>
 <script>
 import {getSimpleSign} from '@/api/activity';
+import { getMessage } from '@/api/userInfo';
 import rfActivityDetail from '@/components/activity-detail';
 import rfBackTop from '@/components/rf-back-top';
 import rfNoData from '@/components/rf-no-data';
@@ -41,8 +42,17 @@ export default {
 			navDetailShow: false,
 			appName: this.$mSettingConfig.appName,
 			get_receive_status: 0,
-			articleId: null
+			articleId: null,
+			orgId: this.$mStore.getters.orgId,
+			hasLogin: false,
+			hasLoginOrg: false,
 		};
+	},
+	onShareAppMessage() {
+		return {
+		 title: 'soc連心',
+		 path: '/pages/product/activity?orgId=' + this.$mStore.getters.orgId+"&id="+this.articleId,
+		}
 	},
 	// #ifndef MP
 	onNavigationBarButtonTap(e) {
@@ -55,20 +65,37 @@ export default {
 	onPageScroll(e) {
 		this.scrollTop = e.scrollTop;
 	},
-	async onLoad(options) {
+	onLoad(options) {
+		let orgId = options.orgId;
+		if(orgId) {
+			this.$mStore.commit('setOrgId',orgId);
+			this.initMessage(orgId);
+		}
+
 		this.articleId = options.id;
 		this.userInfo = uni.getStorageSync('userInfo') || {};
-		await this.initData();
+		this.initData();
 	},
 	methods: {
 		// 数据初始化
 		async initData() {
-      this.currentUrl = `${this.$mConfig.hostUrl}/pages/product/article?id=${this.articleId}`;
-			await this.getArticleDetail();
+			this.currentUrl = `${this.$mConfig.hostUrl}/pages/product/activity?orgId=11111&id=${this.articleId}`;
+			 this.getArticleDetail();
+		},
+		initMessage(orgId) {
+			this.$http.post(`${getMessage}`,{},{params: {orgId : orgId}})
+			.then( r => {
+				this.$mStore.commit('setMessageData',r.data.data[0]);
+				this.messageData = r.data.data[0];
+				this.$forceUpdate();
+			})
+			.catch(err => {
+
+			});
 		},
 		// 获取产品详情
 		async getArticleDetail() {
-			await this.$http
+			 this.$http
 				.post(`${getSimpleSign}`,{},{params:{id: this.articleId}})
 				.then(async r => {
 					this.loading = false;
@@ -79,7 +106,7 @@ export default {
 					this.articleDetail = r.data;
 					this.$forceUpdate();
 					uni.setNavigationBarTitle({ title: "" });
-					await this.$mHelper.handleWxH5Share(this.appName, r.data.name, this.currentUrl, r.data.welfareDisplay);
+					//this.$mHelper.handleWxH5Share(this.appName, r.data.name, this.currentUrl, r.data.welfareDisplay);
 				})
 				.catch(err => {
 					this.loading = false;

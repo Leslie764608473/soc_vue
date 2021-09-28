@@ -41,7 +41,8 @@ export default {
 			navDetailShow: false,
 			appName: this.$mSettingConfig.appName,
 			get_receive_status: 0,
-			articleId: null
+			articleId: null,
+			orgId: this.$mStore.getters.orgId,
 		};
 	},
 	// #ifndef MP
@@ -56,6 +57,10 @@ export default {
 		this.scrollTop = e.scrollTop;
 	},
 	async onLoad(options) {
+		let orgId = options.orgId;
+		if(orgId && orgId != this.$mStore.getters.orgId) {
+			this.$mStore.commit('setOrgId',orgId);
+		}
 		this.articleId = options.id;
 		this.userInfo = uni.getStorageSync('userInfo') || {};
 		await this.initData();
@@ -63,7 +68,7 @@ export default {
 	methods: {
 		// 数据初始化
 		async initData() {
-      this.currentUrl = `${this.$mConfig.hostUrl}/pages/product/article?id=${this.articleId}`;
+			this.currentUrl = `${this.$mConfig.hostUrl}/pages/product/article?orgId=${this.orgId}&id=${this.articleId}`;
 			await this.getArticleDetail();
 		},
 		// 获取产品详情

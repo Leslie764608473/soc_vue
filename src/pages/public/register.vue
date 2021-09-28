@@ -41,11 +41,18 @@
 											<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
 									</picker>
 								</view>
+								<view v-else-if="item.nameEn == 'arrive_date'" style="position: relative;">
+									<picker mode="date" fields="month" style="margin-left: -15rpx;" @change="arriveChange">
+											<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="arrive_dateShow" placeholder="YYYY-MM" />
+											<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
+									</picker>
+								</view>
 								<view v-else-if="item.nameEn == 'native_place'">
 									<picker @change="pickerChange" style="margin-left: -15rpx;" @columnchange="columnchange" :range="addArrAll" range-key="name" mode="multiSelector">
 										<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="native_placeShow" placeholder="請選擇籍貫" />
 									</picker>
 								</view>
+								<uni-easyinput v-else-if="item.nameEn == 'mobile'" trim="both" :inputBorder="false" :clearable="false" type="text" v-model="registerParams['mobile']" :placeholder="'請輸入'+item.nameZh" />
 								<uni-easyinput v-else trim="both" :inputBorder="false" :clearable="false" type="text" v-model="registerParams[item.nameEn]" :placeholder="'請輸入'+item.nameZh" />
 							</uni-forms-item>
 						</uni-forms>
@@ -63,8 +70,8 @@
 						<uni-forms class="registerForm" ref="registerForm2" :modelValue="registerParams" label-position="top" label-width="500">
 							<uni-forms-item v-if="item.type == '聯係方式'" class="registerFormItem" :required="item.isRequired==1?true:false" :label="item.nameZh" :name="item.nameEn" v-for="(item,index) in registerItems" :key="index">
 								<view v-if="item.nameEn == 'wechat_num'">
-									<uni-data-checkbox v-model="wechatType" :localdata="wechat_numArr" ></uni-data-checkbox>
-									<view class="line10"></view>
+									<uni-data-checkbox v-model="wechatType" v-if="item.nameZh != '微信'" :localdata="wechat_numArr" ></uni-data-checkbox>
+									<view class="line10" v-if="item.nameZh != '微信'"></view>
 									<uni-easyinput style="border-bottom: 1px solid #dedede;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams[item.nameEn]" :placeholder="'請輸入'+wechatType" />
 								</view>
 								<view v-else-if="item.nameEn == 'priority_contact'">
@@ -172,8 +179,8 @@
 				<view class="signTitle">申請日期</view>
 				<view class="signVlaue"><uni-dateformat format="yyyy年MM月dd日" :date="registerDate"></uni-dateformat></view>
 
-				<view class="signTitle" v-if="registerOrg_id != 47">身份證照片 ( 正面 )</view>
-				<view class="grace-idcard-items" v-if="registerOrg_id != 47">
+				<view class="signTitle" v-if="isUploadIds">身份證照片 ( 正面 )</view>
+				<view class="grace-idcard-items" v-if="isUploadIds">
 					<view class="grace-idcard-uper-btn" @tap="selectImg1">
 						<view class="img"><image :src="camera" mode="widthFix" /></view>
 						<view class="text">拍攝或選擇照片</view>
@@ -182,8 +189,8 @@
 						<image :src="idCard1"  @tap="previewImg1" mode="widthFix"></image>
 					</view>
 				</view>
-				<view class="signTitle" v-if="registerOrg_id != 47">身份證照片 ( 背面 )</view>
-				<view class="grace-idcard-items" v-if="registerOrg_id != 47">
+				<view class="signTitle" v-if="isUploadIds">身份證照片 ( 背面 )</view>
+				<view class="grace-idcard-items" v-if="isUploadIds">
 					<view class="grace-idcard-uper-btn" @tap="selectImg2">
 						<view class="img"><image :src="camera" mode="widthFix" /></view>
 						<view class="text">拍攝或選擇照片</view>
@@ -213,7 +220,7 @@
 					<text>和</text>
 					<navigator style="display: inline;" :class="'text-' + themeColor.name" :url="'/pages/set/about/detail?orgId='+registerOrg_id+'&title=個人信息收集聲明'" open-type="navigate">《個人信息收集聲明》</navigator>
 				</view>
-				<view style="margin-bottom: 20rpx;" v-if="registerOrg_id == 47 && registerSt != '香港河北聯誼會'">
+				<view style="margin-bottom: 20rpx;" v-if="registerOrg_id == 47 && registerSt != '香港河北聯誼會' && registerSt != ''">
 					<text
 						@tap="isAppAgreementDefaultSelectNew"
 						style="margin-right: 10rpx;"
@@ -271,7 +278,7 @@
 	})
 	import qs from "qs";
 import { mapMutations } from 'vuex';
-import { registerByPass, smsCode,getRegister,serviceList,register } from '@/api/login';
+import { registerByPass, smsCode,getRegister,serviceList,register,getNative } from '@/api/login';
 import moment from '@/common/moment';
 import htzSignature from '@/components/htz-signature/htz-signature.vue'
 import AllAddress from './AddressData.js';
@@ -301,11 +308,20 @@ export default {
 			closeRegisterPromoCode: this.$mSettingConfig.closeRegisterPromoCode, // 是否允许点击登录按钮
 			registerParams: {},
 			registerItems: [],
+			xqNameArr_all: [{"value": "中西區","name": "中西區"},{"value": "東區","name": "東區"},{"value": "南區","name": "南區"},{"value": "灣仔區","name": "灣仔區"},
+			{"value": "九龍城區","name": "九龍城區"},{"value": "觀塘區","name": "觀塘區"},{"value": "深水埗區","name": "深水埗區"},{"value": "黃大仙區","name": "黃大仙區"},
+			{"value": "油尖旺區","name": "油尖旺區"},{"value": "離島區","name": "離島區"},{"value": "葵青區","name": "葵青區"},{"value": "北區","name": "北區"},
+			{"value": "西貢區","name": "西貢區"},{"value": "沙田區","name": "沙田區"},{"value": "大埔區","name": "大埔區"},{"value": "荃灣區","name": "荃灣區"},
+			{"value": "屯門區","name": "屯門區"},{"value": "元朗區","name": "元朗區"}],
 			xqNameArr: [{"value": "中西區","name": "中西區"},{"value": "東區","name": "東區"},{"value": "南區","name": "南區"},{"value": "灣仔區","name": "灣仔區"},
 			{"value": "九龍城區","name": "九龍城區"},{"value": "觀塘區","name": "觀塘區"},{"value": "深水埗區","name": "深水埗區"},{"value": "黃大仙區","name": "黃大仙區"},
 			{"value": "油尖旺區","name": "油尖旺區"},{"value": "離島區","name": "離島區"},{"value": "葵青區","name": "葵青區"},{"value": "北區","name": "北區"},
 			{"value": "西貢區","name": "西貢區"},{"value": "沙田區","name": "沙田區"},{"value": "大埔區","name": "大埔區"},{"value": "荃灣區","name": "荃灣區"},
 			{"value": "屯門區","name": "屯門區"},{"value": "元朗區","name": "元朗區"}],
+			xqNameArr_xgd: [{"value": "中西區","name": "中西區"},{"value": "東區","name": "東區"},{"value": "南區","name": "南區"},{"value": "灣仔區","name": "灣仔區"},{"value": "離島區","name": "離島區"}],
+			xqNameArr_jl: [{"value": "黃大仙區","name": "黃大仙區"},{"value": "觀塘區","name": "觀塘區"},{"value": "油尖旺區","name": "油尖旺區"},{"value": "深水埗區","name": "深水埗區"},{"value": "九龍城區","name": "九龍城區"}],
+			xqNameArr_xj: [{"value": "西貢區","name": "西貢區"},{"value": "沙田區","name": "沙田區"},{"value": "北區","name": "北區"},{"value": "元朗區","name": "元朗區"},
+			{"value": "屯門區","name": "屯門區"},{"value": "荃灣區","name": "荃灣區"},{"value": "葵青區","name": "葵青區"},{"value": "沙田區","name": "沙田區"},{"value": "大埔區","name": "大埔區"}],
 			xqNameIndex: 0,
 			xqNameStr: "",
 			regionNameArr: [{"value": "香港島","name":"香港島"},{"value": "九龍","name":"九龍"},{"value": "新界","name":"新界"}],
@@ -341,12 +357,14 @@ export default {
 			idCard2 : idcard2,
 			uploadFalg: false,
 			birthday_strShow: "",
+			arrive_dateShow: "",
 			native_placeShow: "",
 			serviceArr: [],
 			serviceNameArr: [],
 			serviceIndex: 0,
 			registerSt: "",
 			userInfo: this.$mStore.getters.userObj,
+			isUploadIds: false
 		};
 	},
 	components: {
@@ -392,9 +410,11 @@ export default {
 	created() {
 		this.registerOrg_id = this.$mStore.getters.orgId;
 		this.getServeArr(this.registerOrg_id);
+		this.isUploadIds = parseFloat(this.$mStore.getters.messageData.isIdcard) == 0 ? false : true;
 		this.orgChoseName = this.$mStore.getters.messageData.orgName;
 		let orgLogo =  this.$mStore.getters.messageData.orgLogo;
 		this.NowLogo = orgLogo;
+		this.registerMobile = this.userInfo.mobile;
 
 		this.initAddress();
 		this.getRegisterFn();
@@ -410,7 +430,7 @@ export default {
 			this.ctx = uni.createCanvasContext("mycanvas", this);
 		});
 
-		this.registerMobile = this.userInfo.mobile;
+
 		//this.registerService_id = uni.getStorageSync('registerService_id');
 	},
 	watch: {
@@ -441,6 +461,17 @@ export default {
 			this.regionNameIndex = e.target.value;
 			this.regionNameStr = this.regionNameArr[parseFloat(e.target.value)].name;
 			this.registerParams['region_name'] = this.regionNameArr[parseFloat(e.target.value)].name;
+			this.xqNameStr = "";
+			this.registerParams['xq'] = "";
+			if(this.regionNameStr == "香港島") {
+				this.xqNameArr = this.xqNameArr_xgd;
+			} else if (this.regionNameStr == "九龍") {
+				this.xqNameArr = this.xqNameArr_jl;
+			} else if (this.regionNameStr == "新界") {
+				this.xqNameArr = this.xqNameArr_xj;
+			} else {
+				this.xqNameArr = this.xqNameArr_all;
+			}
 			this.$forceUpdate();
 		},
 		bindPickerChange(e) {
@@ -480,6 +511,7 @@ export default {
 					}
 				}
 			}
+			console.log(this.addArrAll);
 			this.$forceUpdate()
 		},
 		columnchange(e) {
@@ -508,7 +540,7 @@ export default {
 					resultText += "-"+this.addArrAll[i][e.target.value[i]].name
 				}
 			};
-			this.registerParams.native_place = resultText;
+			//this.registerParams.native_place = resultText;
 			this.native_placeShow = resultText;
 			this.$forceUpdate();
 		},
@@ -675,7 +707,15 @@ export default {
 			this.registerParams["birthday_str"] = val.detail.value;
 			this.$forceUpdate();
 		},
+		arriveChange(val) {
+			this.arrive_dateShow = val.detail.value;
+			this.registerParams["arrive_date"] = val.detail.value;
+			this.$forceUpdate();
+		},
 		IsHKID(str) {
+			if(str == "" || str == null || str == undefined) {
+				return true
+			}
 			var strValidChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 			 if(str.length < 4) {
 				 this.$mHelper.toast('香港身份證號碼格式錯誤');
@@ -700,16 +740,31 @@ export default {
 			 return true;
 		},
 		getRegisterFn() {
+			this.$http.get(getNative).then((res)=>{
+				//this.addArrAll = res.data;
+			});
 			this.$http.post(getRegister+"?orgId="+this.registerOrg_id).then((res)=>{
 				this.registerItems = res.data;
 				this.registerParams = {};
-				res.data.forEach((item)=>{
-					this.registerParams[item.nameEn] = "";
-				});
+				this.registerParams.mobile = "";
 				this.openFour = true;
 				this.openThree = true;
 				this.openTwo = true;
 				this.openOne = true;
+
+				res.data.forEach((item)=>{
+					if(item.nameEn == "mobile") {
+							let mobileStr = this.userInfo.mobile;
+							if(mobileStr == undefined || mobileStr == null) {
+								mobileStr = "";
+							}
+							this.registerParams.mobile = mobileStr;
+							this.$forceUpdate();
+					} else {
+						this.registerParams[item.nameEn] = "";
+					}
+				});
+
 				this.$forceUpdate();
 			});
 		},
@@ -780,6 +835,21 @@ export default {
 				return false;
 			}
 
+			var nativePlace = this.native_placeShow;
+			if(nativePlace != "" && nativePlace.indexOf("-") != -1) {
+				this.registerParams.native_place = nativePlace.split("-")[0];
+				this.registerParams.native_city = nativePlace.split("-")[1];
+				try{
+					this.registerParams.native_county = nativePlace.split("-")[2];
+				}catch(e){
+					this.registerParams.native_county = "";
+				}
+			} else {
+				this.registerParams.native_place = "";
+				this.registerParams.native_city = "";
+				this.registerParams.native_county = "";
+			}
+
 			this.registerItems.forEach((item)=>{
 				if(item.isRequired==1 && this.registerParams[item.nameEn] == "" && item.nameEn != 'mobile' && item.nameEn != 'wechat_num' && item.nameEn != 'state' && item.nameEn != 'is_sector') {
 						isRequiredF = false;
@@ -787,6 +857,90 @@ export default {
 						this.btnLoading = false;
 						return false;
 				}
+				if(item.isRequired==1 && item.nameEn == 'identity_num') {
+					if(!this.IsHKID(this.registerParams.identity_num)) {
+						isRequiredF = false;
+						uni.showToast({
+							title: '請至少輸入首4位數字包括英文字母',
+							icon: "none",
+							duration: 1500,
+							mask: true
+						})
+						this.btnLoading = false;
+						return false;
+					}
+				}
+				if(item.isRequired==1 && item.nameEn == 'wechat_num') {
+					if(this.wechatType == "微信") {
+						if(this.registerParams.wechat_num == "") {
+							isRequiredF = false;
+							uni.showToast({
+								title: "請輸入微信！",
+								icon: "none",
+								duration: 1500,
+								mask: true
+							})
+							this.btnLoading = false;
+							return false;
+						}
+						this.registerParams.whatsapp_num = "";
+					} else {
+						if(this.registerParams.wechat_num == "") {
+							isRequiredF = false;
+							uni.showToast({
+								title: "請輸入WhatsApp！",
+								icon: "none",
+								duration: 1500,
+								mask: true
+							})
+							this.btnLoading = false;
+							return false;
+						}
+						this.registerParams.whatsapp_num = this.registerParams.wechat_num;
+						this.registerParams.wechat_num = "";
+					}
+				}
+
+				if(item.nameEn == 'state') {
+					if(parseFloat(this.stateType) == 1) {
+						this.registerParams.state = "是";
+						if(this.registerParams.xq == "" && item.isRequired==1) {
+							isRequiredF = false;
+							uni.showToast({
+								title: "請輸入您所登記選區！",
+								icon: "none",
+								duration: 1500,
+								mask: true
+							})
+							this.btnLoading = false;
+							return false;
+						}
+					} else {
+						this.registerParams.state = "否";
+						this.registerParams.xq = "";
+					}
+				}
+				if(item.nameEn == 'is_sector') {
+					if(parseFloat(this.isSectorType) == 1) {
+						this.registerParams.is_sector = "是";
+						if(this.registerParams.record_sector == "" && item.isRequired==1) {
+							isRequiredF = false;
+							uni.showToast({
+								title: "請輸入您所屬的功能界別！",
+								icon: "none",
+								duration: 1500,
+								mask: true
+							})
+							this.btnLoading = false;
+							return false;
+						}
+					} else {
+						this.registerParams.is_sector = "否";
+						this.registerParams.record_sector = "";
+					}
+				}
+
+
 				if(item.nextDic.length>0) {
 					item.nextDic.forEach((item_)=>{
 						if(item_.isRequired==1 && (this.registerParams[item_.nameEn] == undefined || this.registerParams[item_.nameEn] == null || this.registerParams[item_.nameEn] == "")) {
@@ -814,88 +968,10 @@ export default {
 					return false;
 				}
 			}
-			if(!this.IsHKID(this.registerParams.identity_num)) {
-				uni.showToast({
-					title: '請至少輸入首4位數字包括英文字母',
-					icon: "none",
-					duration: 1500,
-					mask: true
-				})
-				this.btnLoading = false;
-				return false;
-			}
-			let nativePlace = this.registerParams.native_place;
-			this.registerParams.native_place = nativePlace.split("-")[0];
-			this.registerParams.native_city = nativePlace.split("-")[1];
-			try{
-				this.registerParams.native_county = nativePlace.split("-")[2];
-			}catch(e){
-				this.registerParams.native_county = "";
-			}
 
 			if(!isRequiredF) {
 				this.btnLoading = false;
 				return false;
-			}
-
-			if(this.wechatType == "微信") {
-				if(this.registerParams.wechat_num == "") {
-					uni.showToast({
-						title: "請輸入微信！",
-						icon: "none",
-						duration: 1500,
-						mask: true
-					})
-					this.btnLoading = false;
-					return false;
-				}
-				this.registerParams.whatsapp_num = "";
-			} else {
-				if(this.registerParams.wechat_num == "") {
-					uni.showToast({
-						title: "請輸入WhatsApp！",
-						icon: "none",
-						duration: 1500,
-						mask: true
-					})
-					this.btnLoading = false;
-					return false;
-				}
-				this.registerParams.whatsapp_num = this.registerParams.wechat_num;
-				this.registerParams.wechat_num = "";
-			}
-			//
-			if(parseFloat(this.stateType) == 1) {
-				this.registerParams.state = "是";
-				if(this.registerParams.xq == "") {
-					uni.showToast({
-						title: "請輸入您所登記選區！",
-						icon: "none",
-						duration: 1500,
-						mask: true
-					})
-					this.btnLoading = false;
-					return false;
-				}
-			} else {
-				this.registerParams.state = "否";
-				this.registerParams.xq = "";
-			}
-			if(parseFloat(this.isSectorType) == 1) {
-				this.registerParams.is_sector = "是";
-				if(this.registerParams.record_sector == "") {
-					uni.showToast({
-						title: "請輸入您所屬的功能界別！",
-						icon: "none",
-						duration: 1500,
-						mask: true
-					})
-					this.btnLoading = false;
-					return false;
-				}
-			} else {
-				this.registerParams.is_sector = "否";
-				this.registerParams.record_sector = "";
 			}
 
 			if (!this.appAgreementDefaultSelect) {
@@ -919,26 +995,26 @@ export default {
 				return;
 			}
 			if(this.registerOrg_id == 47) {
+					if(this.appAgreementDefaultSelect_ && this.registerSt != '香港河北聯誼會') {
+						this.registerParams.caluse = 1;
+					} else {
+						this.registerParams.caluse = 0;
+					}
+
 					if(this.registerParams.is_pr == undefined || this.registerParams.is_pr == null || this.registerParams.is_pr == "") {
-						uni.showToast({
-							title: "請選擇您是否是香港永久性居民及選民！",
-							icon: "none",
-							duration: 1500,
-							mask: true
-						})
-						this.btnLoading = false;
-						return;
+
 					} else {
 						this.registerParams.is_pr = parseInt(this.registerParams.is_pr);
 					}
 			}
 
-			this.registerParams.mobile = this.registerMobile;
+			if(this.registerParams.mobile == "" || this.registerParams.mobile == null || this.registerParams.mobile == undefined) {
+				this.registerParams.mobile = this.userInfo.mobile;
+			}
+
 			this.registerParams.service_center_id = this.serviceArr[this.serviceIndex].id;
-			/* if(this.registerParams.professional_sector.length>0) {
-				this.registerParams.professional_sector = this.registerParams.professional_sector.join();
-			} */
 			this.registerParams.org_id = this.registerOrg_id;
+			this.registerParams.wid = this.userInfo.id;
 
 			this.$http
 				.post(register,this.registerParams)

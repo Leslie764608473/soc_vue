@@ -1,5 +1,5 @@
 <template>
-	<view class="rf-no-data hideToShow" :style="{ backgroundColor: bgColor }">
+	<view class="rf-no-data hideToShow" :style="{ backgroundColor: bgColor,height: heightBox?'100%':'100vh' }">
 		<view class="image"
 			><image :src="custom == true ? notFoundImg : noNetWorkImg"></image
 		></view>
@@ -30,6 +30,10 @@ import { mapGetters } from 'vuex';
 // import settings from '@/library/settings.js';
 export default {
 	props: {
+		heightBox: {
+			type: Boolean,
+			default: false
+		},
 		isShow: {
 			type: Boolean,
 			default: false

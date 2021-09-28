@@ -36,7 +36,6 @@
 				<view class="cell-tip">
 					<input
 						type="text"
-						@blur="handleUpdateInfo()"
 						style="text-align: right;"
 						v-model="profileInfo.nickname"
 						placeholder="請輸入您的暱稱"
@@ -49,7 +48,6 @@
 				<view class="cell-tip">
 					<input
 						type="text"
-						@blur="handleUpdateInfo()"
 						style="text-align: right;"
 						v-model="profileInfo.nameZh"
 						placeholder="請輸入您的姓名"
@@ -87,9 +85,9 @@
 
 		</view>
 
-		<!-- <view :loading="btnLoading" @tap="toUpdateInfo" class="list-cell b-b" style="border-radius:20rpx; width: calc(100% - 50rpx);margin-left: 25rpx;">
+		<view :loading="btnLoading" @tap="toUpdateInfo" class="list-cell b-b" style="border-radius:20rpx; width: calc(100% - 50rpx);margin-left: 25rpx;">
 			<text style="color:#0081ff;word-spacing: 50rpx;font-weight: 500;">確   定</text>
-		</view> -->
+		</view>
 
 		<!--加载动画-->
 		<rfLoading isFullScreen :active="loading"></rfLoading>
@@ -183,7 +181,7 @@ export default {
 		bindPickerChange(e) {
 			this.genderName = e.target.value;
 			this.profileInfo.gender = this.genders[parseFloat(e.target.value)].name;
-			this.handleUpdateInfo();
+			//this.handleUpdateInfo();
 		},
 		// 上传头像
 		handleUploadFile(data) {
@@ -220,12 +218,12 @@ export default {
 		// 监听日期更改
 		bindDateChange(e) {
 			this.date = e.target.value;
-			this.handleUpdateInfo();
+			//this.handleUpdateInfo();
 		},
 		// 监听性别更改
 		handleGenderChange(e) {
 			this.profileInfo.gender = e.detail.value;
-			this.handleUpdateInfo();
+			//this.handleUpdateInfo();
 		},
 		// 数据初始化
 		initData() {
@@ -254,11 +252,8 @@ export default {
 		// 更新用户信息
 		async handleUpdateInfo() {
 			this.profileInfo.birthdayStr = this.date;
-		/* 	this.btnLoading = true;
-			this.loadProgress = this.loadProgress + 6;
-			const timer = setInterval(() => {
-				this.loadProgress = this.loadProgress + 6;
-			}, 50); */
+		this.btnLoading = true;
+		uni.showLoading();
 			await this.$http
 				.post(`${updateNickName}?id=${this.profileInfo.id}`,{}, {
 					params: {
@@ -270,25 +265,25 @@ export default {
 						orgId: this.$mStore.getters.orgId
 					}
 				})
-				.then(() => {
-					let obj = _this.$mStore.getters.orgUserInfo;
-					obj.umsMember.nickname = this.profileInfo.nickname;
-					_this.$mStore.commit('setUserObj',obj);
-					/* let obj = _this.$mStore.getters.userObj;
-					obj.memberName = this.profileInfo.nameZh;
-					obj.umsMember.nameZh = this.profileInfo.nameZh;
-					_this.$mStore.commit('setUserObj',obj); */
+				.then((e) => {
+					uni.hideLoading();
+					if(e.code == 200) {
+						this.btnLoading = false;
+						let obj = this.$mStore.getters.orgUserInfo;
+						obj.umsMember.nickname = this.profileInfo.nickname;
+						this.$mStore.commit('setUserObj',obj);
 
-
-					/* clearInterval(timer);
-					this.loadProgress = 0;
-					this.$mHelper.toast('恭喜您, 個人資料修改成功!');
-					setTimeout(() => {
+						this.$mHelper.toast('恭喜您, 個人資料修改成功!');
+					} else {
+						this.$mHelper.toast('修改失敗，'+e.data);
+					}
+					/* setTimeout(() => {
 						this.$mRouter.back();
 					}, 1 * 1000); */
 				})
 				.catch(() => {
-					//this.btnLoading = false;
+					uni.hideLoading();
+					this.btnLoading = false;
 				});
 		}
 	}

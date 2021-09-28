@@ -157,7 +157,7 @@ export default {
 	onShareAppMessage() {
 		return {
 			title: `歡迎來到${this.appName}`,
-			path: '/pages/index/index?orgId=' + this.$mStore.getters.orgId
+			path: '/pages/index/index?choseSoc=1&orgId=' + this.$mStore.getters.orgId
 		};
 	},
 	onLoad() {
@@ -243,7 +243,8 @@ export default {
 		//...mapMutations(['login']),
 		// 数据初始化
 		async initData() {
-			this.hasLogin = this.$mStore.getters.hasLoginOrg;
+			this.hasLoginOrg = this.$mStore.getters.hasLoginOrg;
+			this.hasLogin = this.$mStore.getters.hasLogin;
 
 			if(this.hasLogin) {
 				// 社團登錄
@@ -310,11 +311,21 @@ export default {
 		navTo(route) {
 			if (!route) return;
 			if(!this.hasLogin) {
+				this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
+				return false;
+			} else {
+				if(!this.hasLoginOrg) {
+					this.$mRouter.push({ route: '/pages/public/register' });
+					return false;
+				}
+			}
+			this.$mRouter.push({ route });
+			/* if(!this.hasLogin) {
 				this.$mRouter.push({ route: '/pages/public/register' });
 				//uni.showToast({title:"您還未加入本社團！",icon:"none"});
 			} else {
 				this.$mRouter.push({ route });
-			}
+			} */
 		},
 		/**
 		 *  会员卡下拉和回弹
