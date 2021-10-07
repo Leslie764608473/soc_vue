@@ -263,6 +263,10 @@
 				type: String,
 				default: ''
 			},
+			otherOrg: {
+				type: Boolean,
+				default: false,
+			},
 			product: {
 				type: Object,
 				default() {
@@ -434,6 +438,20 @@
       ...mapMutations(['setCartNum']),
 			// 返回上一页
 			navBack() {
+				if(!this.hasLogin) {
+					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
+					return false;
+				} else {
+					if(!this.hasLoginOrg) {
+						this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
+						return false;
+					} else {
+						if(this.otherOrg) {
+							this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
+							return false;
+						}
+					}
+				}
 				this.$mRouter.back();
 			},
 			add_yhq(type) {
@@ -442,8 +460,35 @@
 					return false;
 				} else {
 					if(!this.hasLoginOrg) {
-						this.$mRouter.push({ route: '/pages/public/register' });
+						uni.showModal({
+						    content: '您未登錄本社團，無法報名！',
+								cancelText: "前往登錄",
+								confirmText: "前往註冊",
+						    success: (res)=> {
+						        if (res.confirm) {
+						           this.$mRouter.push({route: '/pages/public/register' });
+						        } else if (res.cancel) {
+											 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
+						        }
+						    }
+						});
 						return false;
+					} else {
+						if(this.otherOrg) {
+							uni.showModal({
+							    content: '您未登錄本社團，無法報名！',
+									cancelText: "前往登錄",
+									confirmText: "前往註冊",
+							    success: (res)=> {
+							        if (res.confirm) {
+							           this.$mRouter.push({route: '/pages/public/register' });
+							        } else if (res.cancel) {
+												 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
+							        }
+							    }
+							});
+							return false;
+						}
 					}
 				}
 				if(parseInt(type) == 1) {
@@ -495,8 +540,35 @@
 					return false;
 				} else {
 					if(!this.hasLoginOrg) {
-						this.$mRouter.push({ route: '/pages/public/register' });
+						uni.showModal({
+						    content: '您未登錄本社團，無法報名！',
+								cancelText: "前往登錄",
+								confirmText: "前往註冊",
+						    success: (res)=> {
+						        if (res.confirm) {
+						           this.$mRouter.push({route: '/pages/public/register' });
+						        } else if (res.cancel) {
+											 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
+						        }
+						    }
+						});
 						return false;
+					} else {
+						if(this.otherOrg) {
+							uni.showModal({
+							    content: '您未登錄本社團，無法報名！',
+									cancelText: "前往登錄",
+									confirmText: "前往註冊",
+							    success: (res)=> {
+							        if (res.confirm) {
+							           this.$mRouter.push({route: '/pages/public/register' });
+							        } else if (res.cancel) {
+												 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
+							        }
+							    }
+							});
+							return false;
+						}
 					}
 				}
 				if(parseInt(type) == 1) {

@@ -13,7 +13,7 @@
 				<view>請準確填寫以下信息</view>
 			</view>
 			<uni-collapse class="collapseBox">
-				<uni-collapse-item :open="openOne">
+				<uni-collapse-item :open="openOne" v-if="showOne">
 					<template slot="title">
 						<view slot="title" class="collapseTitle">
 							<image :src="rIcon1" class="collapseIcon" mode=""></image>
@@ -59,7 +59,7 @@
 					</view>
 				</uni-collapse-item>
 				<view class="centerLine"></view>
-				<uni-collapse-item :open="openTwo">
+				<uni-collapse-item :open="openTwo" v-if="showTwo">
 					<template slot="title">
 						<view slot="title" class="collapseTitle">
 							<image :src="rIcon2" class="collapseIcon" mode=""></image>
@@ -86,8 +86,8 @@
 											<picker v-if="item_.nameEn == 'region_name'" @change="regionNameChange" style="margin-left: -15rpx;" :value="regionNameIndex" rangeKey="name" :range="regionNameArr">
 												<uni-easyinput style="background: white;" class="disabledPicker" disabled :inputBorder="false" type="text" v-model="registerParams['region_name']" :placeholder="'請選擇'+item_.nameZh" />
 											</picker>
-											<picker v-else-if="item_.nameEn == 'xq'" @change="xqNameChange" style="margin-left: -15rpx;" :value="xqNameIndex" :range="xqNameArr" rangeKey="name">
-												<uni-easyinput style="background: white;" class="disabledPicker" disabled :inputBorder="false" type="text" v-model="registerParams['xq']" :placeholder="'請選擇'+item_.nameZh" />
+											<picker v-else-if="item_.nameEn == 'central_district_name'" @change="xqNameChange" style="margin-left: -15rpx;" :value="xqNameIndex" :range="xqNameArr" rangeKey="name">
+												<uni-easyinput style="background: white;" class="disabledPicker" disabled :inputBorder="false" type="text" v-model="registerParams['central_district_name']" :placeholder="'請選擇'+item_.nameZh" />
 											</picker>
 											<uni-easyinput v-else style="border-bottom: 1px solid #dedede;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams[item_.nameEn]" :placeholder="'請輸入'+item_.nameZh" />
 										</uni-forms-item>
@@ -103,7 +103,7 @@
 					</view>
 				</uni-collapse-item>
 				<view class="centerLine"></view>
-				<uni-collapse-item :open="openThree">
+				<uni-collapse-item :open="openThree" v-if="showThree">
 					<template slot="title">
 						<view slot="title" class="collapseTitle">
 							<image :src="rIcon3" class="collapseIcon" mode=""></image>
@@ -122,7 +122,7 @@
 					</view>
 				</uni-collapse-item>
 				<view class="centerLine"></view>
-				<uni-collapse-item :open="openFour">
+				<uni-collapse-item :open="openFour" v-if="showFour">
 					<template slot="title">
 						<view slot="title" class="collapseTitle">
 							<image :src="rIcon4" class="collapseIcon" mode=""></image>
@@ -346,6 +346,10 @@ export default {
 			openThree: false,
 			openTwo: false,
 			openOne: false,
+			showFour: true,
+			showThree: true,
+			showTwo: true,
+			showOne: true,
 			registerDate: new Date(),
 			signImage: '',
 			isEnd: false ,// 是否签名
@@ -454,7 +458,7 @@ export default {
 		xqNameChange(e) {
 			this.xqNameIndex = e.target.value;
 			this.xqNameStr = this.xqNameArr[parseFloat(e.target.value)].name;
-			this.registerParams['xq'] = this.xqNameArr[parseFloat(e.target.value)].name;
+			this.registerParams['central_district_name'] = this.xqNameArr[parseFloat(e.target.value)].name;
 			this.$forceUpdate();
 		},
 		regionNameChange(e) {
@@ -740,9 +744,9 @@ export default {
 			 return true;
 		},
 		getRegisterFn() {
-			this.$http.get(getNative).then((res)=>{
-				//this.addArrAll = res.data;
-			});
+			/* this.$http.get(getNative).then((res)=>{
+				this.addArrAll = res.data;
+			}); */
 			this.$http.post(getRegister+"?orgId="+this.registerOrg_id).then((res)=>{
 				this.registerItems = res.data;
 				this.registerParams = {};
@@ -751,6 +755,11 @@ export default {
 				this.openThree = true;
 				this.openTwo = true;
 				this.openOne = true;
+
+				this.showFour = false;
+				this.showThree = false;
+				this.showTwo = false;
+				this.showOne = false;
 
 				res.data.forEach((item)=>{
 					if(item.nameEn == "mobile") {
@@ -762,6 +771,15 @@ export default {
 							this.$forceUpdate();
 					} else {
 						this.registerParams[item.nameEn] = "";
+					}
+					if(item.type == "基本信息") {
+						this.showOne = true;
+					} else if(item.type == "聯係方式") {
+						this.showTwo = true;
+					} else if(item.type == "工作信息") {
+						this.showThree = true;
+					} else if(item.type == "其他" && item.nameEn != "sign") {
+						this.showFour = true;
 					}
 				});
 
@@ -861,7 +879,7 @@ export default {
 					if(!this.IsHKID(this.registerParams.identity_num)) {
 						isRequiredF = false;
 						uni.showToast({
-							title: '請至少輸入首4位數字包括英文字母',
+							title: '請至少輸入首4位數字包括英文字母的身份證號碼',
 							icon: "none",
 							duration: 1500,
 							mask: true

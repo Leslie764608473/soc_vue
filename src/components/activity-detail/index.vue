@@ -245,6 +245,7 @@
 						name: '女'
 					}
 				],
+				otherOrg: false,
 
 			};
 		},
@@ -252,10 +253,10 @@
 
 		},
 		onLoad(options) {
-			/* let orgId = options.orgId;
+			let orgId = options.orgId;
 			if(orgId && orgId != this.$mStore.getters.orgId) {
-				this.$mStore.commit('setOrgId',orgId);
-			} */
+				this.otherOrg = true;
+			}
 		},
 		filters: {
 			time(val) {
@@ -323,8 +324,35 @@
 					return false;
 				} else {
 					if(!this.hasLoginOrg) {
-						this.$mRouter.push({ route: '/pages/public/register' });
+						uni.showModal({
+						    content: '您未登錄本社團，無法報名！',
+								cancelText: "前往登錄",
+								confirmText: "前往註冊",
+						    success: (res)=> {
+						        if (res.confirm) {
+						           this.$mRouter.push({route: '/pages/public/register' });
+						        } else if (res.cancel) {
+											 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
+						        }
+						    }
+						});
 						return false;
+					} else {
+						if(this.otherOrg) {
+							uni.showModal({
+							    content: '您未登錄本社團，無法報名！',
+									cancelText: "前往登錄",
+									confirmText: "前往註冊",
+							    success: (res)=> {
+							        if (res.confirm) {
+							           this.$mRouter.push({route: '/pages/public/register' });
+							        } else if (res.cancel) {
+												 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
+							        }
+							    }
+							});
+							return false;
+						}
 					}
 				}
 				if(parseFloat(this.bmFlag) == 1) {
@@ -335,6 +363,11 @@
 					this.$mHelper.toast('請輸入手提電話！');
 					return false;
 				}
+				if((this.activityParams.name_zh == "" || this.activityParams.name_zh == null) && (this.activityParams.name_en == "" || this.activityParams.name_en == null)) {
+					this.$mHelper.toast('請輸入您的姓名或英文名！');
+					return false;
+				}
+
 				var fill_status = true;
 				this.product.selected_field.forEach((item)=>{
 						if(item.fill_status == 1) {
@@ -377,10 +410,12 @@
 							if(r.code == 200) {
 								this.$mHelper.toast("報名成功！有關資料稍後會專人核對，如有任何查詢，可於辦公時間聯繫當值職員聯絡。請注意：如有重複提交，資料僅以第一次提交為準",10000);
 								this.clearData();
+							} else {
+								this.$mHelper.toast(r.data);
 							}
 					})
 					.catch(err => {
-
+						this.$mHelper.toast(err);
 					});
 			},
 			dqChange(e) {

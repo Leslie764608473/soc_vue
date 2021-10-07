@@ -44,14 +44,23 @@
 				<view class="noDataTitle">加載失敗，請檢查一下網絡設置</view>
 				<view @tap="getOrgListFn()" slot="refresh" class="noDataBtn">重新加載</view>
 		</view>
+		<!-- 添加按鈕 -->
+		<movable-area class="movableArea" v-if="!addOrgShow">
+			<movable-view class="movableView" direction="all" :x="moveX" :y="moveY">
+				<text class="iconfont icon-shenqingshetuan" @click="addOrgShow = true"></text>
+			</movable-view>
+		</movable-area>
+		<!-- 新增社團彈框 -->
+		<add-popup ref="addPopup" :addOrgInfo="addOrgInfo" v-if="addOrgShow"></add-popup>
 	</view>
 </template>
 
 <script>
+	import addPopup from '@/components/soc-popup/addOrg.vue';
 	import refresh from '@/components/xlsx/refresh.vue';
 	import noLoginBg from '@/static/my_topBg.jpg';
 	import rfNoData from '@/components/rf-no-data';
-	import { getOrgList } from '@/api/login';
+	import { getOrgList,getNewOrg } from '@/api/login';
 	export default {
 		data() {
 			return {
@@ -64,10 +73,15 @@
 				orgLoading: true,
 				startTop: 0,
 				rTop:0,
+				moveX: 0,
+				moveY: 0,
+				addOrgInfo: {},
+				addOrgShow: false,
 			};
 		},
 		components: {
 			rfNoData,
+			addPopup,
 			refresh
 		},
 		props:["backTop"],
@@ -75,6 +89,13 @@
 
 		},
 		created() {
+			uni.getSystemInfo({
+				success: (res) => {
+					this.moveX = res.windowWidth - 70;
+					this.moveY = res.windowHeight - 30;
+				}
+			});
+			this.getNewOrgFn();
 			if(this.orgList.length == 0) {
 				this.getOrgListFn();
 			} else {
@@ -86,6 +107,14 @@
 			refreshStart(e) {
 				this.startTop = e.touches[0].clientY - e.currentTarget.offsetTop;
 				this.$refs.refresh.refreshStart(e);
+			},
+			getNewOrgFn() {
+				this.$http.get(getNewOrg).then((r) => {
+					if(r.code == 200) {
+						this.addOrgInfo = r.data[0];
+						this.$forceUpdate();
+					}
+				});
 			},
 			refreshMove(e){
 				let moveTop = e.touches[0].clientY - e.currentTarget.offsetTop;
@@ -308,6 +337,36 @@
 					word-break: keep-all;
 					overflow: hidden;
 					text-overflow: ellipsis;
+				}
+			}
+		}
+
+		.movableArea{
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 98;
+			pointer-events: none;//设置area元素不可点击，则事件便会下移至页面下层元素
+			.movableView {
+				pointer-events: auto;//可以点击
+				width: 100rpx;
+				height: 100rpx;
+				background: linear-gradient(to top right, #1daefe , #1585f7);
+				border-radius: 50%;
+				cursor: pointer;
+				text {
+					position: absolute;
+					left: 0;
+					bottom:0;
+					width: 100rpx;
+					height: 100rpx;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					font-size: 80rpx;
+					color: #FFFFFF;
 				}
 			}
 		}

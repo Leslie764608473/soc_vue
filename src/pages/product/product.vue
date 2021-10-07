@@ -1,6 +1,6 @@
 <template>
 	<view class="product">
-		<rf-product-detail @product="getProductDetail" :get_receive_status="get_receive_status" :userInfo="userInfo" :url="currentUrl" :product="productDetail"></rf-product-detail>
+		<rf-product-detail @product="getProductDetail" :get_receive_status="get_receive_status" :otherOrg="otherOrg" :userInfo="userInfo" :url="currentUrl" :product="productDetail"></rf-product-detail>
     <!--回到顶部-->
 		<rf-back-top :scrollTop="scrollTop"></rf-back-top>
 		<!-- 404页面 -->
@@ -57,6 +57,7 @@ export default {
 			appName: this.$mSettingConfig.appName,
 			get_receive_status: 0,
 			orgId: this.$mStore.getters.orgId,
+			otherOrg: false,
 		};
 	},
 	// #ifndef MP
@@ -79,16 +80,17 @@ export default {
 		 path: '/pages/product/product?orgId=' + this.$mStore.getters.orgId+"&id="+this.productId,
 		}
 	},
-	async onLoad(options) {
+	onLoad(options) {
 		let orgId = options.orgId;
-		if(orgId) {
+		if(orgId && orgId != this.$mStore.getters.orgId) {
 			this.$mStore.commit('setOrgId',orgId);
 			this.initMessage(orgId);
+			this.otherOrg = true;
 		}
 
 		this.productId = options.id;
 		this.userInfo = uni.getStorageSync('userInfo') || {};
-		await this.initData();
+		this.initData();
 	},
 	methods: {
 		// 隐藏顶部导航
@@ -103,7 +105,7 @@ export default {
 				this.$forceUpdate();
 			})
 			.catch(err => {
-		
+
 			});
 		},
 		// 数据初始化

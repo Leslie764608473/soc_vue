@@ -20,6 +20,7 @@ const verifyTelephone = '/soc/sso/verifyTelephone';
 const verifyAccessToken = '/soc/sso/verifyUserToken';
 
 const getOrgList = '/soc/sso/getOrgList';
+const getNewOrg  = '/soc/sso/getNewOrg';
 
 const getSessionKeyOrOpenId = '/soc/sso/getSessionKeyOrOpenId';
 const wechatLogin = '/soc/sso/wechatLogin';
@@ -38,6 +39,7 @@ export {
 	verifyTelephone,
 	verifyAccessToken,
 	getOrgList,
+	getNewOrg,
 	loginNot,
 	getSessionKeyOrOpenId,
 	wechatLogin,

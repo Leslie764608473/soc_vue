@@ -161,7 +161,7 @@
 			}
 		},
 		watch: {
-			
+
 		},
 		methods: {
 			getOrgListFn() {
@@ -235,18 +235,11 @@
 				});
 				uni.hideTabBar();
 				this.choseSoc = 1;
+				this.$mStore.commit('logoutOrg');
 			},
 			initAll() {
 				if(this.choseSoc == 1) {
-					uni.setNavigationBarColor({
-					    frontColor: '#ffffff',
-					    backgroundColor: '#ffffff',
-					    animation: {
-					        duration: 400,
-					        timingFunc: 'easeIn'
-					    }
-					})
-					uni.hideTabBar();
+					this.backAll();
 					return false;
 				}
 
