@@ -20,7 +20,8 @@
 						:key="index"
 					>
 						<view class="image-wrapper">
-							<image :src="item" class="loaded" mode="aspectFill"></image>
+							<view class="imgBox" :style="{'background-image':'url('+item+')'}" ></view>
+							<!-- <image :src="item" class="loaded" mode="aspectFill"></image> -->
 						</view>
 						<uni-tag class="content" circle size="small" :text="`${index + 1}  / ${product.covers.length}`"></uni-tag>
 					</swiper-item>
@@ -255,6 +256,7 @@
 	import { cartItemCount, cartItemCreate, addCoupon,getServiceByMid,addCart } from '@/api/product';
 	import { collectCreate, collectDel, pickupPointIndex, transmitCreate } from '@/api/basic';
   import { couponReceive, addressList } from '@/api/userInfo';
+	import {verifyAccessToken,login,loginNot,getOrgList} from '@/api/login.js';
 	import { mapMutations } from 'vuex';
   export default {
     name: 'rfProductDetail',
@@ -266,6 +268,14 @@
 			otherOrg: {
 				type: Boolean,
 				default: false,
+			},
+			isShare: {
+				type: Boolean,
+				default: false,
+			},
+			shareOrgId: {
+				type: String,
+				default: ''
 			},
 			product: {
 				type: Object,
@@ -300,6 +310,7 @@
 		},
 		data() {
 			return {
+				orgList: this.$mStore.getters.orgList,
         appServiceQr: this.$mSettingConfig.appServiceQr,
 				kefuShow: false,
 				addressClass: 'none',
@@ -347,6 +358,7 @@
 				serviceNameArr: [],
 				serviceArr: [],
 				disabledArr: [],
+				userInfoU: this.$mStore.getters.userObj,
 			};
 		},
 		async onShareAppMessage () {
@@ -432,7 +444,6 @@
 			}
 		},
 		created() {
-
 		},
     methods: {
       ...mapMutations(['setCartNum']),
@@ -441,52 +452,130 @@
 				if(!this.hasLogin) {
 					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
 					return false;
+				}
+				if(this.isShare) {
+					this.$mRouter.reLaunch({route: '/pages/index/index?backType=1&orgId='+this.shareOrgId});
 				} else {
-					if(!this.hasLoginOrg) {
-						this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
-						return false;
-					} else {
-						if(this.otherOrg) {
-							this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
+					this.$mRouter.back();
+				}
+			},
+			getUuid() {
+				 	var s = [];
+			    var hexDigits = "0123456789abcdef";
+			    for (var i = 0; i < 36; i++) {
+			        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+			    }
+			    s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+			    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+			    s[8] = s[13] = s[18] = s[23] = "-";
+			    var uuid = s.join("");
+			    return uuid;
+			},
+			toLogin(orgChoseId,type) {
+				let uuid = this.getUuid();
+				let login_param = {};
+				login_param = {
+					username: this.userInfoU.mobile,
+					orgId: orgChoseId,
+					onlyUuid: uuid
+				}
+				this.$http
+					.post(loginNot,{},{params:login_param})
+					.then(res => {
+						if(res.code == 200) {
+							uni.setStorageSync('accessToken', res.data.tokenHead+""+res.data.token);
+							uni.setStorageSync('refreshToken',res.data.tokenHead+""+res.data.token);
+							uni.setStorageSync('orgAccessToken',res.data.tokenHead+""+res.data.token);
+							this.$http.get(verifyAccessToken).then((r) => {
+									this.$mStore.commit('loginOrg',{
+										Token: res.data.tokenHead+""+res.data.token,
+										UserInfo: r.msg
+									});
+									this.orgUserInfo = r.msg;
+									uni.showLoading();
+									setTimeout(()=>{
+										uni.hideLoading();
+										if(type == 1) {
+											this.$http.post(addCoupon,{},{params:{
+												member_id : this.orgUserInfo.memberId,
+												product_id : this.product.id
+											}})
+											.then(res => {
+												this.$mHelper.toast(res.data);
+												this.product.get_status = 1;
+											}).catch((err) => {
+												this.$mHelper.toast(err);
+											});
+										} else {
+											this.isLyqPopupShow = true;
+											this.getServeArr(this.orgUserInfo.memberId,this.product.id);
+										}
+									},1000);
+
+							})
+						}
+					}).catch(() => {
+
+					});
+			},
+			orgLogin(orgId,type) {
+				// 未登錄社團  ----  1. 驗證是否可登錄  2. 可登錄——自動登錄    不可登錄——註冊
+				if(this.orgList.length == 0) {
+					this.orgList = [];
+					this.$http.get(getOrgList,{mobile:this.userInfo.mobile}).then((r) => {
+						if(r.code == 200) {
+							this.orgList = r.data;
+							this.$mStore.commit('setOrgList',r.data);
+							this.orgList.forEach((item)=>{
+								if(orgId == item.id) {
+									if(item.joinStatus == 1) {
+										// 已註冊  自動登錄
+										this.toLogin(orgId,type);
+										return true;
+									} else if (item.joinStatus == -1) {
+										// 審核中
+										this.$mHelper.toast("您的賬號還在審核中，審核成功即可領取！");
+										return false;
+									} else {
+										// 未註冊
+										this.$mRouter.push({route: '/pages/public/register' });
+										return false;
+									}
+								}
+							});
+						}
+					});
+					return false;
+				}
+				this.orgList.forEach((item)=>{
+					if(orgId == item.id) {
+						if(item.joinStatus == 1) {
+							// 已註冊  自動登錄
+							this.toLogin(orgId,type);
+							return true;
+						} else if (item.joinStatus == -1) {
+							// 審核中
+							this.$mHelper.toast("您的賬號還在審核中，審核成功即可領取！");
+							return false;
+						} else {
+							// 未註冊
+							this.$mRouter.push({route: '/pages/public/register' });
 							return false;
 						}
 					}
-				}
-				this.$mRouter.back();
+				});
 			},
 			add_yhq(type) {
 				if(!this.hasLogin) {
-					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
+					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index?orgId='+this.shareOrgId+'&type=1&id='+this.product.id});
 					return false;
 				} else {
 					if(!this.hasLoginOrg) {
-						uni.showModal({
-						    content: '您未登錄本社團，無法報名！',
-								cancelText: "前往登錄",
-								confirmText: "前往註冊",
-						    success: (res)=> {
-						        if (res.confirm) {
-						           this.$mRouter.push({route: '/pages/public/register' });
-						        } else if (res.cancel) {
-											 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
-						        }
-						    }
-						});
+						this.orgLogin(this.shareOrgId,1);
 						return false;
 					} else {
 						if(this.otherOrg) {
-							uni.showModal({
-							    content: '您未登錄本社團，無法報名！',
-									cancelText: "前往登錄",
-									confirmText: "前往註冊",
-							    success: (res)=> {
-							        if (res.confirm) {
-							           this.$mRouter.push({route: '/pages/public/register' });
-							        } else if (res.cancel) {
-												 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
-							        }
-							    }
-							});
+							this.orgLogin(this.shareOrgId,1);
 							return false;
 						}
 					}
@@ -536,37 +625,15 @@
 			},
 			add_lyq(type) {
 				if(!this.hasLogin) {
-					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
+					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index?orgId='+this.shareOrgId+'&type=1&id='+this.product.id});
 					return false;
 				} else {
 					if(!this.hasLoginOrg) {
-						uni.showModal({
-						    content: '您未登錄本社團，無法報名！',
-								cancelText: "前往登錄",
-								confirmText: "前往註冊",
-						    success: (res)=> {
-						        if (res.confirm) {
-						           this.$mRouter.push({route: '/pages/public/register' });
-						        } else if (res.cancel) {
-											 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
-						        }
-						    }
-						});
+						this.orgLogin(this.shareOrgId,2);
 						return false;
 					} else {
 						if(this.otherOrg) {
-							uni.showModal({
-							    content: '您未登錄本社團，無法報名！',
-									cancelText: "前往登錄",
-									confirmText: "前往註冊",
-							    success: (res)=> {
-							        if (res.confirm) {
-							           this.$mRouter.push({route: '/pages/public/register' });
-							        } else if (res.cancel) {
-												 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
-							        }
-							    }
-							});
+							this.orgLogin(this.shareOrgId,2);
 							return false;
 						}
 					}
@@ -785,6 +852,12 @@
 		margin: 12rpx 30rpx;
 		height: 67rpx;
 	}
+	.imgBox{
+		height: 100%;
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: contain;
+	}
 </style>
 <style lang="scss">
 .rf-product-detail {
@@ -801,7 +874,8 @@
 		color: $font-color-dark;
 	}
 	.carousel {
-		height: 722upx;
+		// height: 722upx;
+		height: 75vw;
 		position: relative;
 		swiper {
 			height: 100%;
@@ -809,6 +883,7 @@
 		.image-wrapper {
 			width: 100%;
 			height: 100%;
+			background-color: white;
 		}
 		.swiper-item {
 			display: flex;

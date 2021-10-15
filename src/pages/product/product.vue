@@ -1,6 +1,6 @@
 <template>
 	<view class="product">
-		<rf-product-detail @product="getProductDetail" :get_receive_status="get_receive_status" :otherOrg="otherOrg" :userInfo="userInfo" :url="currentUrl" :product="productDetail"></rf-product-detail>
+		<rf-product-detail @product="getProductDetail" :get_receive_status="get_receive_status" :otherOrg="otherOrg" :isShare="isShare" :shareOrgId="shareOrgId" :userInfo="userInfo" :url="currentUrl" :product="productDetail"></rf-product-detail>
     <!--回到顶部-->
 		<rf-back-top :scrollTop="scrollTop"></rf-back-top>
 		<!-- 404页面 -->
@@ -58,6 +58,8 @@ export default {
 			get_receive_status: 0,
 			orgId: this.$mStore.getters.orgId,
 			otherOrg: false,
+			shareOrgId: null,
+			isShare: false
 		};
 	},
 	// #ifndef MP
@@ -81,13 +83,18 @@ export default {
 		}
 	},
 	onLoad(options) {
+		this.shareOrgId = this.$mStore.getters.orgId;
+		this.isShare = false;
 		let orgId = options.orgId;
+		if(orgId) {
+			this.isShare = true;
+			this.shareOrgId = orgId;
+		}
 		if(orgId && orgId != this.$mStore.getters.orgId) {
 			this.$mStore.commit('setOrgId',orgId);
 			this.initMessage(orgId);
 			this.otherOrg = true;
 		}
-
 		this.productId = options.id;
 		this.userInfo = uni.getStorageSync('userInfo') || {};
 		this.initData();
@@ -130,17 +137,17 @@ export default {
 					this.productDetail.covers = [];
 					this.productDetail.covers.push(r.data.list.pic);
 					let pic_str = r.data.list.albumPics==undefined?"":r.data.list.albumPics;
+
 					if(pic_str == "") {
 
 					} else if(pic_str.indexOf(",") == -1) {
 						this.productDetail.covers.push(pic_str)
 					} else {
-						pic_str.split(",").forEach(function (item) {
-							this.productDetail.covers.push($.trim(item))
+						pic_str.split(",").forEach( (item) => {
+							this.productDetail.covers.push(item)
 						});
 					}
 					this.$forceUpdate();
-					//this.productDetail.covers = [this.productDetail.pic,this.productDetail.pic,this.productDetail.pic]
 					uni.setNavigationBarTitle({ title: "" });
 					//await this.$mHelper.handleWxH5Share(this.appName, r.data.name, this.currentUrl, r.data.list.pic);
 				})

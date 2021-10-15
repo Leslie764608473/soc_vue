@@ -278,7 +278,7 @@
 	})
 	import qs from "qs";
 import { mapMutations } from 'vuex';
-import { registerByPass, smsCode,getRegister,serviceList,register,getNative } from '@/api/login';
+import { registerByPass, smsCode,getRegister,serviceList,register,getNative,getHometownDict } from '@/api/login';
 import moment from '@/common/moment';
 import htzSignature from '@/components/htz-signature/htz-signature.vue'
 import AllAddress from './AddressData.js';
@@ -747,6 +747,9 @@ export default {
 			/* this.$http.get(getNative).then((res)=>{
 				this.addArrAll = res.data;
 			}); */
+			this.$http.post(getHometownDict,{"level": 3,"regionNames": ["太原市"]}).then((res)=>{
+
+			});
 			this.$http.post(getRegister+"?orgId="+this.registerOrg_id).then((res)=>{
 				this.registerItems = res.data;
 				this.registerParams = {};

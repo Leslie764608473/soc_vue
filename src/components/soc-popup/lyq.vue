@@ -79,7 +79,7 @@ export default {
 				return false;
 			}
 
-			this.$mHelper.toast("您所在機構沒有參與此次福利,詳情請聯係社團管理員");
+			this.$mHelper.toast("您所在機構沒有參與此次福利,詳情請聯繫社團管理員");
 			return false;
 		},
 		dateFlagFn() {

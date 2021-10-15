@@ -89,7 +89,10 @@ export default {
 			loginBg: this.$mAssetsPath.loginBg,
 			topShow: "",
 			mobileType: 0,
-			wxLoginParams: {}
+			wxLoginParams: {},
+			detailType: null,
+			detailId: null,
+			detailOrgId: null
 		};
 	},
 	onShow() {
@@ -109,6 +112,12 @@ export default {
 		} else {
 			// 手機註冊
 			this.topShow = "SOC";
+		}
+		var detailType = options.detailType;
+		if(detailType && (detailType == 1 || detailType == 2)) {
+			this.detailType = detailType;
+			this.detailId = options.id;
+			this.detailOrgId = options.orgId;
 		}
 		this.mobileType = options.type;
 
@@ -204,7 +213,11 @@ export default {
 											Token: res.data.tokenHead+""+res.data.token,
 											UserInfo: r.msg
 										});
-										this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=1' });
+										if(this.detailType != null) {
+											this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=0&type=' + this.detailType + '&id=' + this.detailId + '&orgId=' + this.detailOrgId});
+										} else {
+											this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=1' });
+										}
 									} else {
 										uni.showToast({title:"網絡異常，請檢查網絡後後再試",icon:"none"});
 									}
@@ -227,7 +240,11 @@ export default {
 											Token: res.data.tokenHead+""+res.data.token,
 											UserInfo: r.msg
 										});
-										this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=1' });
+										if(this.detailType != null) {
+											this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=0&type=' + this.detailType + '&id=' + this.detailId + '&orgId=' + this.detailOrgId });
+										} else {
+											this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=1' });
+										}
 								})
 							} else {
 								uni.showToast({title:"註冊失敗",icon:"none"});

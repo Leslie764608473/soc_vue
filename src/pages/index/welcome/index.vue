@@ -32,7 +32,10 @@ export default {
 			session_key: "",
 			userObj: {},
 			userInfoAll: "",
-			wxLoginParams: {}
+			wxLoginParams: {},
+			detailType: null,
+			detailId: null,
+			detailOrgId: null
 		};
 	},
 	onShow() {
@@ -46,6 +49,12 @@ export default {
 		}
 	},
 	onLoad(options) {
+		var type = options.type;
+		if(type && (type == 1 || type == 2)) {
+			this.detailType = type;
+			this.detailId = options.id;
+			this.detailOrgId = options.orgId;
+		}
 		this.isAuth();
 	},
 	onHide() {
@@ -53,7 +62,11 @@ export default {
 	},
 	methods: {
 		mobile_login() {
-			this.$mRouter.push({ route: '/pages/index/mobile/index?type=1' });
+			if(this.detailType != null) {
+				this.$mRouter.push({ route: '/pages/index/mobile/index?type=1&detailType=' + this.detailType + '&id=' + this.detailId + '&orgId=' + this.detailOrgId });
+			} else {
+				this.$mRouter.push({ route: '/pages/index/mobile/index?type=1' });
+			}
 		},
 		wechatLogin() {
 			this.wxLoginParams = Object.assign({}, this.userObj);
@@ -73,11 +86,19 @@ export default {
 									Token: res.data.tokenHead+""+res.data.token,
 									UserInfo: r.msg
 								});
-								this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=1' });
+								if(this.detailType != null) {
+									this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=0&type=' + this.detailType + '&id=' + this.detailId + '&orgId=' + this.detailOrgId });
+								} else {
+									this.$mRouter.reLaunch({ route: '/pages/index/index?choseSoc=1' });
+								}
 							} else {
 								// 未綁定手機號
 								uni.setStorageSync('wxLoginParams', JSON.stringify(this.wxLoginParams));
-								this.$mRouter.push({ route: '/pages/index/mobile/index?type=2' });
+								if(this.detailType != null) {
+									this.$mRouter.push({ route: '/pages/index/mobile/index?type=2&detailType=' + this.detailType + '&id=' + this.detailId + '&orgId=' + this.detailOrgId});
+								} else {
+									this.$mRouter.push({ route: '/pages/index/mobile/index?type=2' });
+								}
 							}
 						} else {
 							uni.showToast({title:"網絡異常，請檢查網絡後後再試",icon:"none"});

@@ -28,6 +28,9 @@ const bindMobile = '/soc/sso/bindMobile';
 const loginByAuthCode = '/soc/sso/loginByAuthCode';
 
 const getNative = '/soc/sso/getNative';
+const getHometownDict = '/soc/sso/getHometownDict';
+
+const getCreateQRCodeMessage = '/soc/sso/getCreateQRCodeMessage';
 export {
 	getRegister,
 	serviceList,
@@ -45,5 +48,7 @@ export {
 	wechatLogin,
 	bindMobile,
 	loginByAuthCode,
-	getNative
+	getNative,
+	getHometownDict,
+	getCreateQRCodeMessage
 };

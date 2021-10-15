@@ -3,10 +3,10 @@ const CONFIG = {
     development: {
 			orgId: 46,
         assetsPath: '/static', // 静态资源路径
-				baseUrl: 'https://testface02.newsinfohk.com', // 后台接口请求地址
-				//baseUrl: 'https://testface02.datailinc.com',
+				baseUrl: 'https://socface02.newsinfohk.com', // 后台接口请求地址
+				//baseUrl: 'https://testface02.newsinfohk.com',
 				//baseUrl: 'http://2.1.2.29:11002',
-				hostUrl: 'http://h5.tinyshop.rageframe.com', // H5地址(前端运行地址)
+				hostUrl: 'https://testface02.newsinfohk.com', // H5地址(前端运行地址)
         websocketUrl: '', // websocket服务端地址
         weixinAppId: '' // 微信公众号appid
     },
@@ -14,8 +14,9 @@ const CONFIG = {
     production: {
 				orgId: 46,
         assetsPath: '/static', // 静态资源路径
-        baseUrl: 'https://testface02.newsinfohk.com', // 后台接口请求地址
-        hostUrl: 'http://h5.tinyshop.rageframe.com', // H5地址(前端运行地址)
+        //baseUrl: 'https://socface02.newsinfohk.com', // 后台接口请求地址
+				baseUrl: 'https://testface02.newsinfohk.com', // 后台接口请求地址
+        hostUrl: 'https://testface02.newsinfohk.com', // H5地址(前端运行地址)
         websocketUrl: '', // websocket服务端地址
         weixinAppId: '' // 微信公众号appid
     }

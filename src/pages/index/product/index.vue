@@ -191,6 +191,24 @@ export default {
 					if(this.tabCurrentIndex != 1) {
 						return false;
 					}
+
+					try{
+						r.data.list.forEach((item,i)=>{
+							let startTime = new Date(item.promotionStartTime).getTime();
+							let endTime = new Date(item.promotionEndTime).getTime();
+							let nowTime = new Date().getTime();
+							if(startTime > nowTime) {
+								item.fl_timeFilter = 0;// 未開始
+							} else if(endTime < nowTime) {
+								item.fl_timeFilter = 1;// 已結束
+							} else {
+								item.fl_timeFilter = 2;
+							}
+						});
+					}catch(e){
+						//TODO handle the exception
+					}
+
 					this.dataList[this.tabCurrentIndex] = [...this.dataList[this.tabCurrentIndex], ...r.data.list];
 					this.loadingType = r.data.total === this.dataList[this.tabCurrentIndex].length ? 'nomore' : 'more';
 					this.$forceUpdate();

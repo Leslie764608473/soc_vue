@@ -5,7 +5,7 @@
 		:class="{ 'mescroll-fade-in': isShowToTop }"
 		@click="toTopClick"
 	>
-		<text class="iconfont icondingbu"></text>
+		<text class="iconfont icon-fanhuidingbu1"></text>
 	</view>
 </template>
 <script>
@@ -75,7 +75,7 @@ export default {
 	justify-content: center;
 	align-items: center;
 	.iconfont {
-		font-size: 54upx;
+		font-size: 36upx !important;
 		color: $color-white;
 		font-weight: 600;
 		z-index: 100;

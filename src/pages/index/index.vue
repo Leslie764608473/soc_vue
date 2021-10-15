@@ -79,6 +79,8 @@
 				hasLoginOrg: false,
 				userInfo: this.$mStore.getters.userObj,
 				orgUserInfo: this.$mStore.getters.orgUserInfo,
+				orgList: [],
+				backType: null
 			};
 		},
 		onShow() {
@@ -115,6 +117,10 @@
 				}
 			});
 
+			if(options.backType && options.backType == 1) {
+				this.backType = 1;
+			}
+
 			this.hasLogin = this.$mStore.getters.hasLogin;
 			this.userInfo = this.$mStore.getters.userObj;
 			this.hasLoginOrg = this.$mStore.getters.hasLoginOrg;
@@ -122,56 +128,116 @@
 			this.auditStatus = parseFloat(this.$mStore.getters.auditStatus);
 			this.$forceUpdate();
 
-			this.getOrgListFn();
-
 			this.choseSoc = parseInt(options.choseSoc);
 			if(options.sdBirth == 1 || options.sdBirth == "1") {
 				this.$refs.sdBirth.getReminder(this.orgUserInfo.memberId);
 			}
 
 			if(!this.hasLogin) {
-				// 沒登錄 直接去登錄
+				// 沒登錄 直接去登錄  --- 平台
 				this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
 			} else {
-				// 已登錄
+				// 已登錄  平台
 				if(this.choseSoc == 1) {
 					this.backAll();
 					return false;
 				}
-
-				if(options.orgId) {
-					// 連接帶 orgId
-					if(this.orgUserInfo.umsMember.orgIdList.indexOf(parseFloat(options.orgId)) == -1) {
-						// 本人不在該社團
-						this.backAll();
-					} else {
-						if(this.orgUserInfo.umsMember.orgId == options.orgId) {
-							// 當前社團一致
-							this.$mStore.commit('setOrgId',options.orgId);
-							this.NowOrgId = options.orgId;
-							this.initAll();
-						} else {
-							// 當前社團不一致  重新選擇社團
+				this.getOrgListFn(options);
+				 // 連接帶 orgId
+					/* if(this.hasLoginOrg) {
+						// 已登錄社團
+						if(this.orgUserInfo.umsMember.orgIdList.indexOf(parseFloat(options.orgId)) == -1) {
+							// 本人不在該社團
 							this.backAll();
+						} else {
+							if(this.orgUserInfo.umsMember.orgId == options.orgId) {
+								// 當前社團一致
+								this.$mStore.commit('setOrgId',options.orgId);
+								this.NowOrgId = options.orgId;
+								this.initAll();
+							} else {
+								// 當前社團不一致  重新選擇社團
+								this.backAll();
+							}
 						}
-					}
-				} else {
-					this.backAll();
-				}
+					} else {
+						// 未登錄社團
+						this.$mStore.commit('setOrgId',options.orgId);
+						this.NowOrgId = options.orgId;
+						this.initAll();
+					} */
+					//   上述注释-----判断是否登录 社团   （取消）  更换逻辑--->  是否已加入 加入自动登录  未加入退出登录
+
+
 			}
 		},
 		watch: {
 
 		},
 		methods: {
-			getOrgListFn() {
+			navTo(route) {
+				this.$mRouter.push({ route });
+			},
+			goDetail(options) {
+				if(options.type) {
+					options.id = parseInt(options.id);
+					// 需要自动跳转到  福利、活动
+					if(parseInt(options.type) == 1) {
+						// 福利
+						this.navTo(`/pages/product/product?id=${options.id}`)
+					} else if(parseInt(options.type) == 2){
+						// 活动
+						this.navTo(`/pages/product/activity?id=${options.id}`)
+					}
+				}
+			},
+			getOrgListFn(options) {
+				var type = options.type;
+				this.orgList = [];
 				this.$http.get(getOrgList,{mobile:this.userInfo.mobile}).then((r) => {
 					if(r.code == 200) {
+						this.orgList = r.data;
 						this.$mStore.commit('setOrgList',r.data);
+
+						if(options.orgId) {
+							this.orgList.forEach((item)=>{
+								if(options.orgId == item.id) {
+									if(item.joinStatus == 1) {
+										// 已註冊  自動登錄
+										if(this.hasLoginOrg) {
+											this.$mStore.commit('setOrgId',options.orgId);
+											this.NowOrgId = options.orgId;
+											this.initAll();
+											this.goDetail(options);
+										} else {
+											this.choseSoc = 0;
+											this.toLogin(options.orgId,options);
+										}
+										return false;
+									} else if (item.joinStatus == -1) {
+										// 審核中
+									} else {
+										// 未註冊
+									}
+
+									this.$mStore.commit('logoutOrg');
+									this.hasLoginOrg = false;
+									this.$mStore.commit('setOrgId',options.orgId);
+									this.NowOrgId = options.orgId;
+									this.choseSoc = 0;
+									this.$forceUpdate();
+									this.initAll();
+									this.goDetail(options);
+								}
+							});
+						} else {
+							this.backAll();
+						}
+
 					}
 				});
 			},
-			toLogin(orgChoseId) {
+			toLogin(orgChoseId,options) {
 				this.loadingFlag = true;
 				let uuid = this.getUuid();
 				let login_param = {};
@@ -192,20 +258,25 @@
 										Token: res.data.tokenHead+""+res.data.token,
 										UserInfo: r.msg
 									});
-
+									this.$mStore.commit('setOrgId',orgChoseId);
 									// 山東社團  生日祝福
 									if(orgChoseId == 46) {
 										setTimeout(()=>{
-											this.$mStore.commit('setOrgId',orgChoseId);
-											this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&sdBirth=1&orgId=${orgChoseId}` });
+											if(options && options.type) {
+												this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&type=${options.type}&id=${options.id}&sdBirth=1&orgId=${orgChoseId}` });
+											} else {
+												this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&sdBirth=1&orgId=${orgChoseId}` });
+											}
 										},500);
 									} else {
 										setTimeout(()=>{
-											this.$mStore.commit('setOrgId',orgChoseId);
-											this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&orgId=${orgChoseId}` });
+											if(options && options.type) {
+												this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&type=${options.type}&id=${options.id}&orgId=${orgChoseId}` });
+											} else {
+												this.$mRouter.reLaunch({ route: `/pages/index/index?choseSoc=0&orgId=${orgChoseId}` });
+											}
 										},500);
 									}
-
 							})
 						}
 					}).catch(() => {
@@ -257,7 +328,11 @@
 
 				setTimeout(()=>{
 					this.changeHeight();
-					this.$refs.productSd.initList();
+					if(parseFloat(this.backType) == 1) {
+						this.$refs.productSd.tabCurrentIndex = 1;
+					} else {
+						this.$refs.productSd.initList();
+					}
 					this.loadingFlag = false;
 				},500);
 			},

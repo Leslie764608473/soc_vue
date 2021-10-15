@@ -12,6 +12,10 @@
 				<text class="showTitle">費用</text>
 				<text class="showContent">{{product.charge}}</text>
 			</view>
+			<view class="activityShow" v-if="product.activityAddr">
+				<text class="showTitle">地點</text>
+				<text class="showContent">{{product.activityAddr}}</text>
+			</view>
 			<view class="activityShow">
 				<text class="showTitle">活動時間</text>
 				<text class="showContent">{{product.startTime}} 到 {{product.endTime}}</text>
@@ -21,19 +25,12 @@
 				<text class="showContent">{{product.signStartTime}} 到 {{product.signEndTime}}</text>
 			</view>
 			<view class="activityShow">
-				<text class="showTitle">活動報名上限</text>
+				<text class="showTitle">報名人數上限</text>
 				<text class="showContent">{{product.enrollmentUpperlimit}}</text>
 			</view>
 			<!-- <view class="activeTitle">活動詳情</view> -->
-
-			<button
-			v-if="showBm == 0"
-				class="confirm-btn"
-				style="border-radius: 20rpx;width: 50vw;"
-				:class="'bg-' + themeColor.name"
-				@tap="showBmFn">
-				我要報名
-			</button>
+			<button v-if="showBm == 0 && overdue" class="confirm-btn confirmBtn" style="border-radius: 20rpx;width: 50vw;" disabled="disabled">我要報名</button>
+			<button v-if="showBm == 0 && !overdue" class="confirm-btn confirmBtn" style="border-radius: 20rpx;width: 50vw;" :class="'bg-' + themeColor.name" @tap="showBmFn">我要報名</button>
 
 			<view style="margin: 50rpx 0;padding: 0 30rpx;" v-if="showBm == 1">
 				<text style="display: inline-block;width: 200rpx;">報名對象：</text>
@@ -177,6 +174,7 @@
 <script>
 	import moment from '@/common/moment';
 	import {areaDic,simpleWebSign,signUpActivity} from '@/api/activity';
+	import {verifyAccessToken,login,loginNot,getOrgList,getCreateQRCodeMessage} from '@/api/login.js';
   export default {
     name: 'rfProductDetail',
     props: {
@@ -186,6 +184,14 @@
 					return {
 					};
 				}
+			},
+			isShare: {
+				type: Boolean,
+				default: false,
+			},
+			shareOrgId: {
+				type: String,
+				default: ''
 			},
 			userInfo: {
 				type: Object,
@@ -207,8 +213,13 @@
 		},
 		data() {
 			return {
+				erCodeImgurl: "",
+				appId : this.$mStore.getters.appId,
+				secret: this.$mStore.getters.secret,
+				orgList: this.$mStore.getters.orgList,
 				btnLoading: false,
 				hasLoginOrg: this.$mStore.getters.hasLoginOrg,
+				userInfoU: this.$mStore.getters.userObj,
 				hasLogin: this.$mStore.getters.hasLogin,
 				dqIndex: 0,
 				zqIndex: 0,
@@ -246,7 +257,7 @@
 					}
 				],
 				otherOrg: false,
-
+				overdue: false
 			};
 		},
 		async onShareAppMessage () {
@@ -277,9 +288,126 @@
 							}
 						}
 				});
+				let signEndTimeStr = this.product.signEndTime;
+				signEndTimeStr = signEndTimeStr.replace(/\./g,"/");
+				let signEndTime = new Date(signEndTimeStr).getTime();
+				let nowTime = new Date().getTime();
+				if(signEndTime < nowTime) {
+					this.overdue = true;
+				} else {
+					this.overdue = false;
+				}
+				this.getAccessToken();
 			},1000);
 		},
     methods: {
+			getAccessToken() {
+				this.$http.post(getCreateQRCodeMessage,{},{dataType: "arraybuffer",responseType: 'arraybuffer',params:{
+					appid: this.appId,
+					secret: this.secret,
+					width: 500,
+					path: "pages/product/activity?id="+this.product.id,
+				}},
+				).then(res => {
+					console.log(res);
+					const arrayBuffer = res.data;
+					this.erCodeImgurl = 'data:image/jpeg;base64,'+ uni.arrayBufferToBase64(arrayBuffer);
+					console.log(this.erCodeImgurl);
+				}).catch((err)=>{
+					console.log(err);
+				})
+			},
+			getUuid() {
+				 	var s = [];
+			    var hexDigits = "0123456789abcdef";
+			    for (var i = 0; i < 36; i++) {
+			        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+			    }
+			    s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+			    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+			    s[8] = s[13] = s[18] = s[23] = "-";
+			    var uuid = s.join("");
+			    return uuid;
+			},
+			toLogin(orgChoseId,type) {
+				let uuid = this.getUuid();
+				let login_param = {};
+				login_param = {
+					username: this.userInfoU.mobile,
+					orgId: orgChoseId,
+					onlyUuid: uuid
+				}
+				this.$http
+					.post(loginNot,{},{params:login_param})
+					.then(res => {
+						if(res.code == 200) {
+							uni.setStorageSync('accessToken', res.data.tokenHead+""+res.data.token);
+							uni.setStorageSync('refreshToken',res.data.tokenHead+""+res.data.token);
+							uni.setStorageSync('orgAccessToken',res.data.tokenHead+""+res.data.token);
+							this.$http.get(verifyAccessToken).then((r) => {
+									this.$mStore.commit('loginOrg',{
+										Token: res.data.tokenHead+""+res.data.token,
+										UserInfo: r.msg
+									});
+									// 自動登錄後
+									uni.showLoading();
+									setTimeout(()=>{
+										uni.hideLoading();
+										this.simpleWebSign_new();
+									},1000);
+							})
+						}
+					}).catch(() => {
+
+					});
+			},
+			orgLogin(orgId) {
+				// 未登錄社團  ----  1. 驗證是否可登錄  2. 可登錄——自動登錄    不可登錄——註冊
+				if(this.orgList.length == 0) {
+					this.orgList = [];
+					this.$http.get(getOrgList,{mobile:this.userInfo.mobile}).then((r) => {
+						if(r.code == 200) {
+							this.orgList = r.data;
+							this.$mStore.commit('setOrgList',r.data);
+							this.orgList.forEach((item)=>{
+								if(orgId == item.id) {
+									if(item.joinStatus == 1) {
+										// 已註冊  自動登錄
+										this.toLogin(orgId);
+										return true;
+									} else if (item.joinStatus == -1) {
+										// 審核中
+										this.$mHelper.toast("您的賬號還在審核中，審核成功即可領取！");
+										return false;
+									} else {
+										// 未註冊
+										this.$mRouter.push({route: '/pages/public/register' });
+										return false;
+									}
+								}
+							});
+						}
+					});
+					return false;
+				}
+				this.orgList.forEach((item)=>{
+					if(orgId == item.id) {
+						if(item.joinStatus == 1) {
+							// 已註冊  自動登錄
+							this.toLogin(orgId);
+							return true;
+						} else if (item.joinStatus == -1) {
+							// 審核中
+							this.$mHelper.toast("您的賬號還在審核中，審核成功即可領取！");
+							return false;
+						} else {
+							// 未註冊
+							this.$mRouter.push({route: '/pages/public/register' });
+							return false;
+						}
+					}
+				});
+			},
 			showBmFn() {
 				this.showBm = 1;
 			},
@@ -318,43 +446,7 @@
 
 					});
 			},
-			simpleWebSign() {
-				if(!this.hasLogin) {
-					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index'});
-					return false;
-				} else {
-					if(!this.hasLoginOrg) {
-						uni.showModal({
-						    content: '您未登錄本社團，無法報名！',
-								cancelText: "前往登錄",
-								confirmText: "前往註冊",
-						    success: (res)=> {
-						        if (res.confirm) {
-						           this.$mRouter.push({route: '/pages/public/register' });
-						        } else if (res.cancel) {
-											 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
-						        }
-						    }
-						});
-						return false;
-					} else {
-						if(this.otherOrg) {
-							uni.showModal({
-							    content: '您未登錄本社團，無法報名！',
-									cancelText: "前往登錄",
-									confirmText: "前往註冊",
-							    success: (res)=> {
-							        if (res.confirm) {
-							           this.$mRouter.push({route: '/pages/public/register' });
-							        } else if (res.cancel) {
-												 this.$mRouter.reLaunch({route: '/pages/index/index?choseSoc=1'});
-							        }
-							    }
-							});
-							return false;
-						}
-					}
-				}
+			simpleWebSign_new() {
 				if(parseFloat(this.bmFlag) == 1) {
 					this.signUpActivityFn();
 					return false;
@@ -417,6 +509,23 @@
 					.catch(err => {
 						this.$mHelper.toast(err);
 					});
+			},
+			simpleWebSign() {
+				if(!this.hasLogin) {
+					this.$mRouter.reLaunch({ route: '/pages/index/welcome/index?orgId='+this.shareOrgId+'&type=2&id='+this.product.id});
+					return false;
+				} else {
+					if(!this.hasLoginOrg) {
+						this.orgLogin(this.shareOrgId);
+						return false;
+					} else {
+						if(this.otherOrg) {
+							this.orgLogin(this.shareOrgId);
+							return false;
+						}
+					}
+				}
+				this.simpleWebSign_new();
 			},
 			dqChange(e) {
 				this.dqIndex = e.target.value;

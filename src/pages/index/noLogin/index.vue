@@ -86,9 +86,9 @@
 		},
 		props:["backTop"],
 		onLoad(options) {
-
 		},
 		created() {
+			this.$mStore.commit('logoutOrg');
 			uni.getSystemInfo({
 				success: (res) => {
 					this.moveX = res.windowWidth - 70;

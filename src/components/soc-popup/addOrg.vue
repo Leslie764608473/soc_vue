@@ -14,7 +14,7 @@
 				</view>
 			</view>
 		</view>
-		<view class="closeBox" @click="back()"> <text>X</text> </view>
+		<view class="closeBox" @click="back()"> <i class="iconfont icon-guanbi"></i> </view>
 	</view>
 </template>
 
@@ -44,7 +44,7 @@ export default {
 					border: "Top"
 				},
 				{
-					icon: "icon-whatsapp",
+					icon: "icon-whatsapp1",
 					text: "phone",
 					color: "#24d366",
 					border: "Left"
@@ -93,8 +93,9 @@ export default {
 	height: 80rpx;
 	border-radius: 50%;
 	color: #0f7df7;
-	text{
-		font-size: 50rpx;
+	.iconfont{
+		line-height: 80rpx;
+		font-weight: bolder;
 	}
 }
 .popup_content {

@@ -1,6 +1,6 @@
 <template>
 	<view class="articleDetail">
-		<rf-activity-detail @product="getArticleDetail" :userInfo="userInfo" :url="currentUrl" :product="articleDetail"></rf-activity-detail>
+		<rf-activity-detail @product="getArticleDetail" :userInfo="userInfo" :isShare="isShare" :shareOrgId="orgId" :url="currentUrl" :product="articleDetail"></rf-activity-detail>
     <!--回到顶部-->
 		<rf-back-top :scrollTop="scrollTop"></rf-back-top>
 		<!-- 404页面 -->
@@ -45,7 +45,9 @@ export default {
 			articleId: null,
 			orgId: this.$mStore.getters.orgId,
 			hasLogin: false,
+			otherOrg: false,
 			hasLoginOrg: false,
+			isShare: false
 		};
 	},
 	onShareAppMessage() {
@@ -67,9 +69,16 @@ export default {
 	},
 	onLoad(options) {
 		let orgId = options.orgId;
+		this.isShare = false;
+		this.otherOrg = false;
 		if(orgId) {
+			this.isShare = true;
+			this.shareOrgId = orgId;
+		}
+		if(orgId && orgId != this.$mStore.getters.orgId) {
 			this.$mStore.commit('setOrgId',orgId);
 			this.initMessage(orgId);
+			this.otherOrg = true;
 		}
 
 		this.articleId = options.id;
