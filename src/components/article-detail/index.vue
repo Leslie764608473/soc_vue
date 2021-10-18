@@ -4,16 +4,16 @@
 			<view class="title">{{product.title}}</view>
 			<view class="time" style="position: relative;">
 				{{product.pubtime | time}}
-				<view class="share">
+				<!-- <view class="share">
 						<button class="share-btn" open-type="share" :class="'text-' + themeColor.name" @tap.stop="share()">
 							<text class="iconfont iconfenxiang"></text>
 							<text class="tui-share-text tui-gray">分享</text>
 						</button>
-						<!-- <button class="share-btn" :class="'text-' + themeColor.name" @tap.stop="copyFn()">
+						<button class="share-btn" :class="'text-' + themeColor.name" @tap.stop="copyFn()">
 							<text class="iconfont iconcopy"></text>
 							<text class="tui-share-text tui-gray">複製鏈接</text>
-						</button> -->
-				</view>
+						</button>
+				</view> -->
 			</view>
 			<!-- <view class="productContent" v-html="product.contentHtml.trim()"></view> -->
 			<!-- <rf-parser lazy-load :html="product.contentHtml"></rf-parser> -->
@@ -32,6 +32,14 @@
 			<view class="share-bg">
 				<image :src="shareBg"></image>
 			</view>
+		</view>
+		<view class="bottomTitle">到底啦~</view>
+		<view class="bottomBtns">
+			<view @click="copyFn()" class="fristBox"><i class="iconfont icon-icon-" style="color: #0f7df7;"></i>複製鏈接</view>
+			<button class="share-btn" open-type="share">
+				<i class="iconfont icon-fenxiang-weixin" style="color: #28c445;"></i>分享給好友
+			</button>
+			<!-- <view class="share-btn" open-type="share" @click="share()"><i class="iconfont icon-fenxiang-weixin" style="color: #28c445;"></i>分享給好友</view> -->
 		</view>
 
 	</view>
@@ -100,7 +108,19 @@
 		},
     methods: {
 			copyFn() {
-
+				uni.setClipboardData({
+						data: "http://app.link-heart.hk/#/pages/product/article?id="+this.product.id,
+						success: function (res) {
+								/* uni.showToast({
+										title: '複製成功',
+								}); */
+						},
+						fail:function (res) {
+								/* uni.showToast({
+										title: '複製失敗',
+								}); */
+						}
+				});
 			},
 			share() {
 			  // #ifdef H5
@@ -118,10 +138,62 @@
   };
 </script>
 <style lang="scss" scoped>
+	.bottomTitle{
+		color: #d9d9d9;
+		border-top: 1px solid #d9d9d9;
+		width: 80vw;
+		display: block;
+		margin: 0 auto;
+		font-size: 25rpx;
+		padding-top: 10rpx;
+		text-align: center;
+	}
+	.bottomBtns{
+		border-top: 1px solid #d9d9d9;
+		width: 100vw;
+		padding: 35rpx 0 60rpx 0;
+		margin: 25rpx 0 0 0;
+		display: block;
+		display: flex;
+		view{
+			flex: 1;
+			color: #333333;
+			font-size: 28rpx;
+			text-align: center;
+			cursor: pointer;
+			&.fristBox{
+				border-right: 1px solid #d9d9d9;
+			}
+			.iconfont{
+				font-size: 35rpx !important;
+				display: inline-block;
+				vertical-align: middle;
+				margin-right: 9rpx;
+			}
+		}
+		.share-btn{
+			flex: 1;
+			background-color: white;
+			background: none;
+			font-size: 28rpx;
+			line-height: 1.5;
+			height: auto;
+			&::after{
+				border: none;
+			}
+			.iconfont{
+				font-size: 35rpx !important;
+				display: inline-block;
+				vertical-align: middle;
+				margin-right: 9rpx;
+			}
+		}
+	}
 .rf-product-detail {
 	background-color: white;
 	min-height: 100vh;
 	.detail {
+		padding-bottom: 20rpx;
 		.share{
 			position: absolute;top: 0;right: 0;
 		}
@@ -139,8 +211,6 @@
 				margin: 0 5rpx;
 			}
 		}
-
-		padding-bottom: 60upx;
 		.title{
 			font-size: 38rpx;
 			font-weight: bolder;

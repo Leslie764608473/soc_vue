@@ -61,9 +61,9 @@ export default {
 	z-index: 10;
 	position: fixed;
 	right: 40upx;
-	bottom: 130upx;
+	bottom: 160rpx;
 	/* #ifdef H5 */
-	bottom: 140upx;
+	bottom: 160rpx;
 	/* #endif */
 	width: 72upx;
 	height: 72upx;

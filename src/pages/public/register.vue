@@ -35,9 +35,15 @@
 							</uni-forms-item>
 							<uni-forms-item v-if="item.type == '基本信息'" class="registerFormItem" :required="item.isRequired==1?true:false" :label="item.nameZh" :name="item.nameEn" v-for="(item,index) in registerItems" :key="index">
 								<uni-data-checkbox v-if="item.nameEn == 'gender'" v-model="registerParams[item.nameEn]" :localdata="JSON.parse(item.selectContent)" ></uni-data-checkbox>
-								<view v-else-if="item.nameEn == 'birthday_str'" style="position: relative;">
+								<view v-else-if="item.nameEn == 'birthday_str' && registerOrg_id!=50" style="position: relative;">
 									<picker mode="date" fields="month" style="margin-left: -15rpx;" @change="birthdayChange">
 											<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="birthday_strShow" placeholder="YYYY-MM" />
+											<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
+									</picker>
+								</view>
+								<view v-else-if="item.nameEn == 'birthday_str' && registerOrg_id==50" style="position: relative;">
+									<picker mode="date" fields="day" style="margin-left: -15rpx;" @change="birthdayChange">
+											<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="birthday_strShow" placeholder="YYYY-MM-DD" />
 											<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
 									</picker>
 								</view>
@@ -47,9 +53,12 @@
 											<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
 									</picker>
 								</view>
-								<view v-else-if="item.nameEn == 'native_place'">
+								<view v-else-if="item.nameEn == 'native_place'" style="position: relative;">
+									<!-- <uni-data-picker class="nativeBox" placeholder="請選擇籍貫" popup-title="請選擇籍貫" :localdata="nativePlaceData" @nodeclick="onnodeclick" @change="onchange" ></uni-data-picker> -->
+
 									<picker @change="pickerChange" style="margin-left: -15rpx;" @columnchange="columnchange" :range="addArrAll" range-key="name" mode="multiSelector">
 										<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="native_placeShow" placeholder="請選擇籍貫" />
+										<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
 									</picker>
 								</view>
 								<uni-easyinput v-else-if="item.nameEn == 'mobile'" trim="both" :inputBorder="false" :clearable="false" type="text" v-model="registerParams['mobile']" :placeholder="'請輸入'+item.nameZh" />
@@ -368,7 +377,8 @@ export default {
 			serviceIndex: 0,
 			registerSt: "",
 			userInfo: this.$mStore.getters.userObj,
-			isUploadIds: false
+			isUploadIds: false,
+			nativePlaceData: [],
 		};
 	},
 	components: {
@@ -422,6 +432,9 @@ export default {
 
 		this.initAddress();
 		this.getRegisterFn();
+
+		this.getHometownFn();
+
 		this.professional_sectorArr = [];
 		this.professionalArr.forEach((item)=>{
 			let obj = {
@@ -441,6 +454,69 @@ export default {
 
 	},
 	methods: {
+		getHometownFn() {
+			this.$http.post(getHometownDict,{"level": 1}).then((res)=>{
+				var newArr = [];
+				res.data.forEach((item)=>{
+					let children = [];
+					this.$http.post(getHometownDict,{"level": 2,"regionNames": [item.namec]}).then((res_)=>{
+						res_.data.forEach((item_)=>{
+							children.push({
+								value: item_.namec,
+								text: item_.namec,
+							})
+						});
+					});
+					newArr.push({
+						value: item.namec,
+						text: item.namec,
+						children: children
+					})
+				})
+				this.nativePlaceData = newArr;
+				this.$forceUpdate();
+			});
+		},
+		getHometownFnThree() {
+			this.$http.post(getHometownDict,{"level": 1}).then((res)=>{
+				var newArr = [];
+				res.data.forEach((item)=>{
+					let children = [];
+					this.$http.post(getHometownDict,{"level": 2,"regionNames": [item.namec]}).then((res_)=>{
+						res_.data.forEach((item_)=>{
+							let children_ = [];
+							this.$http.post(getHometownDict,{"level": 3,"regionNames": [item_.namec]}).then((res__)=>{
+								res__.data.forEach((item__)=>{
+									children_.push({
+										value: item__.namec,
+										text: item__.namec,
+									})
+								});
+							});
+							children.push({
+								value: item_.namec,
+								text: item_.namec,
+								children: children_
+							})
+						});
+					});
+					newArr.push({
+						value: item.namec,
+						text: item.namec,
+						children: children
+					})
+				})
+				this.nativePlaceData = newArr;
+				console.log(this.nativePlaceData);
+				this.$forceUpdate();
+			});
+		},
+		onchange(e) {
+			const value = e.detail.value
+		},
+		onnodeclick(node) {
+			// node 当前点击节点
+		},
 		getServeArr(id) {
 			this.$http.post(serviceList+"?orgId="+id).then((res)=>{
 				this.serviceArr = res.data;
@@ -450,6 +526,10 @@ export default {
 					if(item.name == "香港山東社團总会" || item.name == "香港山東社團總會") {
 						name += "直屬會員（非現有屬會會員）";
 					}
+					if(item.name == "香港海南社團總會") {
+						return false;
+					}
+
 					this.serviceNameArr.push(name);
 				})
 				this.$forceUpdate();
@@ -744,12 +824,6 @@ export default {
 			 return true;
 		},
 		getRegisterFn() {
-			/* this.$http.get(getNative).then((res)=>{
-				this.addArrAll = res.data;
-			}); */
-			this.$http.post(getHometownDict,{"level": 3,"regionNames": ["太原市"]}).then((res)=>{
-
-			});
 			this.$http.post(getRegister+"?orgId="+this.registerOrg_id).then((res)=>{
 				this.registerItems = res.data;
 				this.registerParams = {};
@@ -1190,7 +1264,7 @@ export default {
 			display: block;
 			width: 100%;
 			padding: 0;
-			margin: 0;;
+			margin: 0;
 		}
 		.is-disabled{
 			background: none !important;
@@ -1202,7 +1276,12 @@ export default {
 			}
 		}
 	}
-
+	.nativeBox{
+		view{
+			padding: 0;
+			margin: 0;
+		}
+	}
 	.back-btn {
 		position: absolute;
 		left: 40upx;

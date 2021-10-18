@@ -38,7 +38,7 @@ export default {
 					border: "Bottom"
 				},
 				{
-					icon: "icon-weixin",
+					icon: "icon-weixin1",
 					text: "wechatnum",
 					color: "#27c446",
 					border: "Top"

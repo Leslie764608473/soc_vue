@@ -80,8 +80,12 @@ export default {
 			this.initMessage(orgId);
 			this.otherOrg = true;
 		}
-
-		this.articleId = options.id;
+		let detailId = decodeURIComponent(options.id);
+		if(detailId.indexOf("id=") != -1) {
+			this.articleId = detailId.split("id=")[1];
+		} else {
+			this.articleId = detailId;
+		}
 		this.userInfo = uni.getStorageSync('userInfo') || {};
 		this.initData();
 	},

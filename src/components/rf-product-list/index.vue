@@ -7,6 +7,7 @@
 				 hover-class="hover" :hover-start-time="150" @tap.stop="navTo(`/pages/product/article?id=${item.id}`)">
 					<view class="rf-pro-content" :class="item.coverPic?'':'rf-pro-content-noImg'">
 						<view class="rf-pro-tit">{{ item.title }}</view>
+						<view class="rf-pro-summary" v-if="item.summary">{{ item.summary }}</view>
 						<view class="bottomText">
 							<text class="bottomName" v-if="item.websiteName">來源：{{item.websiteName}}</text>
 							<text class="bottomTime">{{item.pubtime | time}}</text>
@@ -20,6 +21,7 @@
 				 hover-class="hover" :hover-start-time="150" @tap.stop="navTo(`/pages/product/article?id=${item.id}`)">
 					<view class="rf-pro-content rf-pro-content-big" :class="item.coverPic?'':'rf-pro-content-noImg'">
 						<view class="rf-pro-tit">{{ item.title }}</view>
+						<view class="rf-pro-summary" v-if="item.summary">{{ item.summary }}</view>
 						<view class="bottomText">
 							<text class="bottomName" v-if="item.websiteName">來源: {{item.websiteName}}</text>
 							<text class="bottomTime">{{item.pubtime | time}}</text>
@@ -330,6 +332,18 @@ export default {
 			font-size: 32rpx;
 			font-weight: 550;
 			height: auto;
+		}
+		.rf-pro-summary{
+			color: #333333;
+			font-size: 26rpx;
+			height: auto;
+			word-break: break-all;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			display: -webkit-box;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 2;
+			margin-top: 10rpx;
 		}
 	}
 	.rf-pro-content-big{

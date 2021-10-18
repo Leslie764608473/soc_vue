@@ -273,7 +273,7 @@ export default {
 		textarea.setSelectionRange(0, content.length); //核心
 		let result = document.execCommand('Copy'); // 执行浏览器复制命令
 		textarea.remove();
-		const msg = result ? '复制成功' : '复制失败';
+		const msg = result ? '複製成功' : '複製失敗';
 		this.toast(msg);
 	},
 	/**

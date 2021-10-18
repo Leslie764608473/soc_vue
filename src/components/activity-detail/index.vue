@@ -1,8 +1,8 @@
 <template>
   <view class="rf-product-detail">
-		<mp-html v-if="product.welfareDisplay" class="productContent" container-style="color:#333333;padding: 0 30rpx;font-size: 32rpx" :content="product.welfareDisplay.trim()" />
 		<!-- <rf-parser lazy-load :html="product.welfareDisplay"></rf-parser> -->
 		<view class="detail">
+			<button type="default" class="bColor logoBtn" @click="showShareEr()">活動二維碼</button>
 			<view class="title" style="margin-bottom: 20rpx;">{{product.name}}</view>
 			<view class="activityShow">
 				<text class="showTitle">活動類型</text>
@@ -28,6 +28,19 @@
 				<text class="showTitle">報名人數上限</text>
 				<text class="showContent">{{product.enrollmentUpperlimit}}</text>
 			</view>
+
+			<mp-html v-if="product.welfareDisplay" class="productContent" container-style="color:#333333;padding: 0 30rpx;font-size: 32rpx" :content="product.welfareDisplay.trim()" />
+
+			<view class="bottomTitle">到底啦~</view>
+			<view class="bottomBtns">
+				<view @click="copyFn()" class="fristBox"><i class="iconfont icon-icon-" style="color: #0f7df7;"></i>複製鏈接</view>
+				<button class="share-btn" open-type="share">
+					<i class="iconfont icon-fenxiang-weixin" style="color: #28c445;"></i>分享給好友
+				</button>
+				<!-- <view class="share-btn" open-type="share" @click="share()"><i class="iconfont icon-fenxiang-weixin" style="color: #28c445;"></i>分享給好友</view> -->
+			</view>
+
+
 			<!-- <view class="activeTitle">活動詳情</view> -->
 			<button v-if="showBm == 0 && overdue" class="confirm-btn confirmBtn" style="border-radius: 20rpx;width: 50vw;" disabled="disabled">我要報名</button>
 			<button v-if="showBm == 0 && !overdue" class="confirm-btn confirmBtn" style="border-radius: 20rpx;width: 50vw;" :class="'bg-' + themeColor.name" @tap="showBmFn">我要報名</button>
@@ -147,7 +160,6 @@
 				</view>
 			</view>
 
-
 			<button
 			v-if="product.webStartOr != 0 && showBm == 1"
 				class="confirm-btn"
@@ -169,6 +181,17 @@
 				取消
 			</button>
 		</view>
+
+
+		<view class="popup spec show" v-if="shareEr === 'show'" @touchmove.stop.prevent="stopPrevent">
+			<!-- 遮罩层 -->
+			<view class="mask"></view>
+			<view class="share-bg">
+				<view @tap="hideShareSpec"><text style="font-size: 55rpx;position: absolute;right: 10rpx;top: -7rpx;" class="iconfont iconguanbi" :class="'text-' + themeColor.name"></text></view>
+				<image class="image" show-menu-by-longpress="1" @tap="previewImage" data-source="img" :src="erCodeImgurl.replace(/[\r\n]/g,'')" />
+			</view>
+		</view>
+
 	</view>
 </template>
 <script>
@@ -213,6 +236,7 @@
 		},
 		data() {
 			return {
+				shareEr: 'hide',
 				erCodeImgurl: "",
 				appId : this.$mStore.getters.appId,
 				secret: this.$mStore.getters.secret,
@@ -301,18 +325,34 @@
 			},1000);
 		},
     methods: {
+			hideShareSpec() {
+				this.shareEr = 'hide';
+				setTimeout(() => {
+					this.shareEr = 'none';
+				}, 250);
+			},
+			previewImage: function (e) {
+			    uni.previewImage({
+			      urls: [this.erCodeImgurl]
+			    })
+			  },
+			stopPrevent() {
+
+			},
+			showShareEr(e) {
+					this.shareEr = "show";
+			},
 			getAccessToken() {
-				this.$http.post(getCreateQRCodeMessage,{},{dataType: "arraybuffer",responseType: 'arraybuffer',params:{
+				this.$http.post(getCreateQRCodeMessage,{},{params:{
 					appid: this.appId,
 					secret: this.secret,
-					width: 500,
-					path: "pages/product/activity?id="+this.product.id,
+					width: 400,
+					scene: "id="+this.product.id,
+					path: "pages/product/activity",
 				}},
 				).then(res => {
-					console.log(res);
-					const arrayBuffer = res.data;
-					this.erCodeImgurl = 'data:image/jpeg;base64,'+ uni.arrayBufferToBase64(arrayBuffer);
-					console.log(this.erCodeImgurl);
+					this.erCodeImgurl = 'data:image/jpeg;base64,'+ res.data;
+					this.$forceUpdate();
 				}).catch((err)=>{
 					console.log(err);
 				})
@@ -595,6 +635,21 @@
 			bindDateChange(e) {
 				this.date = e.target.value;
 			},
+			copyFn() {
+				uni.setClipboardData({
+						data: "http://app.link-heart.hk/#/pages/product/activity?id="+this.product.id,
+						success: function (res) {
+								/* uni.showToast({
+										title: '複製成功',
+								}); */
+						},
+						fail:function (res) {
+								/* uni.showToast({
+										title: '複製失敗',
+								}); */
+						}
+				});
+			},
 			// 监听性别更改
 			handleGenderChange(e) {
 				this.activityParams.gender = e.detail.value;
@@ -603,6 +658,92 @@
   };
 </script>
 <style lang="scss" scoped>
+	.share-bg {
+		width: 75%;
+		background-color: white;
+		z-index: 10;
+		text-align: center;
+		position: relative;
+		margin: 150rpx auto;
+		border-radius: 15rpx;
+		padding: 20rpx 30rpx;
+		.titleShare{
+			margin-top: 40rpx;
+			font-size: 35rpx;
+		}
+		image {
+			width: 70vw;
+			height: 70vw;
+			margin-top: 50rpx;
+		}
+	}
+	.bottomTitle{
+		color: #d9d9d9;
+		border-top: 1px solid #d9d9d9;
+		width: 80vw;
+		display: block;
+		margin: 0 auto;
+		font-size: 25rpx;
+		padding-top: 10rpx;
+		text-align: center;
+	}
+	.bottomBtns{
+		border-top: 1px solid #d9d9d9;
+		width: 100vw;
+		padding: 35rpx 0 60rpx 0;
+		margin: 25rpx 0 0 0;
+		display: block;
+		display: flex;
+		view{
+			flex: 1;
+			color: #333333;
+			font-size: 28rpx;
+			text-align: center;
+			cursor: pointer;
+			&.fristBox{
+				border-right: 1px solid #d9d9d9;
+			}
+			.iconfont{
+				font-size: 35rpx !important;
+				display: inline-block;
+				vertical-align: middle;
+				margin-right: 9rpx;
+			}
+		}
+		.share-btn{
+			flex: 1;
+			background-color: white;
+			background: none;
+			font-size: 28rpx;
+			line-height: 1.5;
+			height: auto;
+			&::after{
+				border: none;
+			}
+			.iconfont{
+				font-size: 35rpx !important;
+				display: inline-block;
+				vertical-align: middle;
+				margin-right: 9rpx;
+			}
+		}
+	}
+
+	.logoBtn{
+		display: inline-block;
+		font-size: 25rpx;
+		font-weight: 500;
+		height: 65rpx;
+		line-height: 65rpx;
+		margin-top: 25rpx;
+		float: right;
+		background-color: #f0f2f2;
+		color: #0f7df7;
+		&::after{
+			border: none !important;
+		}
+	}
+
 .rf-product-detail {
 	background-color: white;
 	height: 100%;

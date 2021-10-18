@@ -49,7 +49,7 @@
 					<view class="title">
 						<text>{{ product.name }}</text>
 					</view>
-					<view class="share" style="position: relative;top: -50rpx;">
+					<!-- <view class="share" style="position: relative;top: -50rpx;">
 						<rf-tag
 							type="gray"
 							size="small"
@@ -61,7 +61,7 @@
 								<text class="tui-share-text tui-gray">分享</text>
 							</button>
 						</rf-tag>
-					</view>
+					</view> -->
 				</view>
 			</view>
 			<!--购买类型-->
@@ -86,72 +86,6 @@
 						></rf-attr-content>
 				</view>
 			</rf-item-popup>
-			<!-- 评价 -->
-			<!-- <view class="eva-section" @tap="toEvaluateList">
-				<view class="e-header">
-					<text class="tit">評價({{ product.comment_num || 0 }})</text>
-					<text class="tip" v-if="product.match_ratio"
-						>好評率 {{ product.match_ratio }}%</text
-					>
-					<text class="tip" v-else>暫無評價信息</text>
-					<i class="iconfont iconyou"></i>
-				</view>
-				<view
-					class="eva-box"
-					v-if="product.evaluate && product.evaluate.length > 0"
-				>
-					<image
-						class="portrait"
-						:src="
-							(product.evaluate &&
-								product.evaluate[0] &&
-								product.evaluate[0].member_head_portrait) ||
-								headImg
-						"
-						mode="aspectFill"
-					></image>
-					<view class="right">
-						<view class="name">
-							<text>
-								{{
-									(product.evaluate &&
-										product.evaluate[0] &&
-										product.evaluate[0].member_nickname) ||
-										'匿名用户'
-								}}
-							</text>
-							<rf-rate
-								v-if="evaluateList.length > 0"
-								size="16"
-								disabled="true"
-								:value="evaluateList[0].scores"
-								:active-color="themeColor.color"
-							/>
-						</view>
-						<text class="con in2line">{{
-							(product.evaluate &&
-								product.evaluate[0] &&
-								product.evaluate[0].content) ||
-								'这个人很懒，什么都没留下~'
-						}}</text>
-						<view class="bot">
-							<text class="attr"
-								>购买类型：{{
-									(product.evaluate &&
-										product.evaluate[0] &&
-										product.evaluate[0].sku_name) ||
-										singleSkuText
-								}}</text>
-							<text class="time">{{
-								product.evaluate &&
-									product.evaluate[0] &&
-									product.evaluate[0].created_at | time
-							}}</text>
-						</view>
-					</view>
-				</view>
-			</view>
-			 --><!--底部商品详情-->
 			<view class="detail-desc" style="padding: 0 35rpx 40rpx;">
 				<view class="d-header">
 					<text>商品詳情</text>
@@ -199,6 +133,16 @@
 				</view>
 			</view>
 		</view>
+
+		<view class="bottomTitle">到底啦~</view>
+		<view class="bottomBtns">
+			<view @click="copyFn()" class="fristBox"><i class="iconfont icon-icon-" style="color: #0f7df7;"></i>複製鏈接</view>
+			<button class="share-btn" open-type="share">
+				<i class="iconfont icon-fenxiang-weixin" style="color: #28c445;"></i>分享給好友
+			</button>
+			<!-- <view class="share-btn" open-type="share" @click="share()"><i class="iconfont icon-fenxiang-weixin" style="color: #28c445;"></i>分享給好友</view> -->
+		</view>
+
 		<!-- 分享引导 -->
 		<view
 			class="popup spec show"
@@ -833,6 +777,22 @@
 					route: `/pages/order/create/order?data=${JSON.stringify(params)}`
 				});
 			},
+			copyFn() {
+				uni.setClipboardData({
+						// data: "http://app.link-heart.hk/#/",
+						data: "http://app.link-heart.hk/#/pages/product/product?id="+this.product.id,
+						success: function (res) {
+								/* uni.showToast({
+										title: '複製成功',
+								}); */
+						},
+						fail:function (res) {
+								/* uni.showToast({
+										title: '複製失敗',
+								}); */
+						}
+				});
+			},
 			addCart(type, isPointExchange) {
 				if (!this.product.id) return;
 				if (!this.hasLogin) {
@@ -848,6 +808,58 @@
   };
 </script>
 <style lang="scss" scoped>
+	.bottomTitle{
+		color: #d9d9d9;
+		border-top: 1px solid #d9d9d9;
+		width: 80vw;
+		display: block;
+		margin: 0 auto;
+		font-size: 25rpx;
+		padding-top: 10rpx;
+		text-align: center;
+	}
+	.bottomBtns{
+		border-top: 1px solid #d9d9d9;
+		width: 100vw;
+		padding: 35rpx 0 120rpx 0;
+		margin: 25rpx 0 0 0;
+		display: block;
+		display: flex;
+		view{
+			flex: 1;
+			color: #333333;
+			font-size: 28rpx;
+			text-align: center;
+			cursor: pointer;
+			&.fristBox{
+				border-right: 1px solid #d9d9d9;
+			}
+			.iconfont{
+				font-size: 35rpx !important;
+				display: inline-block;
+				vertical-align: middle;
+				margin-right: 9rpx;
+			}
+		}
+		.share-btn{
+			flex: 1;
+			background-color: white;
+			background: none;
+			font-size: 28rpx;
+			line-height: 1.5;
+			height: auto;
+			&::after{
+				border: none;
+			}
+			.iconfont{
+				font-size: 35rpx !important;
+				display: inline-block;
+				vertical-align: middle;
+				margin-right: 9rpx;
+			}
+		}
+	}
+
 	.action-btn-group{
 		margin: 12rpx 30rpx;
 		height: 67rpx;
@@ -857,6 +869,9 @@
 		background-position: center;
 		background-repeat: no-repeat;
 		background-size: contain;
+	}
+	.page-bottom{
+		height: 88rpx;
 	}
 </style>
 <style lang="scss">
@@ -904,7 +919,7 @@
 		}
 	}
 	.detail {
-		padding-bottom: 60upx;
+		padding-bottom: 20rpx;
 	}
 	.service {
 		padding: $spacing-base $spacing-lg 0;
