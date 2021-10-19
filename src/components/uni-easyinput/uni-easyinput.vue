@@ -324,7 +324,7 @@
 		position: relative;
 		text-align: left;
 		color: #333;
-		font-size: 14px;
+		font-size: 26rpx;
 	}
 
 	.uni-easyinput__content {
@@ -333,7 +333,7 @@
 		width: 100%;
 		display: flex;
 		box-sizing: border-box;
-		min-height: 36px;
+		min-height: 36rpx;
 		/* #endif */
 		flex-direction: row;
 		align-items: center;
@@ -347,7 +347,7 @@
 		overflow: hidden;
 		flex: 1;
 		line-height: 1;
-		font-size: 14px;
+		font-size: 26rpx;
 		padding-left: 0 !important;
 	}
 
@@ -364,7 +364,7 @@
 		overflow: hidden;
 		flex: 1;
 		line-height: 1.5;
-		font-size: 14px;
+		font-size: 26rpx;
 		padding-top: 6px;
 		padding-bottom: 10px;
 		height: 80px;

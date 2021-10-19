@@ -392,7 +392,7 @@ export default {
 	padding: 0px;
 	text-align: left;
 	color: #333;
-	font-size: 14px;
+	font-size: 26rpx;
 	// margin-bottom: 22px;
 }
 
@@ -406,7 +406,7 @@ export default {
 	/* #endif */
 	// flex-direction: row;
 	// align-items: center;
-	padding-bottom: 22px;
+	padding-bottom: 0;
 	// margin-bottom: 22px;
 }
 
@@ -429,12 +429,11 @@ export default {
 	width: 65px;
 	// line-height: 2;
 	// margin-top: 3px;
-	padding: 5px 0;
-	height: 26px;
+	padding: 0;
 	// margin-right: 5px;
 	height: 100%;
 	.label-text {
-		font-size: 14px;
+		font-size: 26rpx;
 		color: #333;
 		height: 100%;
 	}

@@ -836,6 +836,7 @@
 			.showTitle{
 				display: inline-block;
 				width: 200rpx;
+				vertical-align: top;
 			}
 			.showContent{
 				display: inline-block;

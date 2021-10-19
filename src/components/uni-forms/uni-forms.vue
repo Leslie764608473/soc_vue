@@ -458,7 +458,7 @@ export default {
 	// overflow: hidden;
 	// padding: 10px 15px;
 	margin: 0;
-	padding: 0 60rpx;
+	padding: 0;
 }
 
 .uni-forms--top {

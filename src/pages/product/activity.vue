@@ -80,12 +80,18 @@ export default {
 			this.initMessage(orgId);
 			this.otherOrg = true;
 		}
-		let detailId = decodeURIComponent(options.id);
-		if(detailId.indexOf("id=") != -1) {
-			this.articleId = detailId.split("id=")[1];
+
+		if(options.scene) {
+			let scene = decodeURIComponent(options.scene)
+			if(scene.indexOf("id=") != -1) {
+				this.articleId = scene.split("id=")[1];
+			} else {
+				this.articleId = scene;
+			}
 		} else {
-			this.articleId = detailId;
+			this.articleId = decodeURIComponent(options.id);
 		}
+
 		this.userInfo = uni.getStorageSync('userInfo') || {};
 		this.initData();
 	},

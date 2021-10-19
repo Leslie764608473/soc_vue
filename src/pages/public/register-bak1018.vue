@@ -1,6 +1,11 @@
 <template>
 	<view class="register">
+		<!--顶部返回按钮-->
+		<!-- <text class="back-btn iconfont iconzuo" @tap="navBack"></text> -->
+		<!-- <view class="right-top-sign"></view> -->
+		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
+			<!-- <view class="left-top-sign"></view> -->
 			<view class="welcome">
 				您正在申請加入
 				<image :src="NowLogo" class="logo"></image>
@@ -17,6 +22,12 @@
 					</template>
 					<view class="collapseContent">
 						<uni-forms class="registerForm" ref="registerForm1" :modelValue="registerParams" label-position="top" label-width="500">
+							<!-- <view style="display: block;margin-top: 20rpx;margin-left: -15rpx;border-bottom: 1px solid #dedede;">
+								<view style="padding: 0 10rpx;font-size: 14px;"><text class="label-text">社團分會</text><text class="is-required" style="color: #dd524d;">*</text></view>
+								<picker @change="bindPickerChange" :value="serviceIndex" :range="serviceNameArr">
+									<uni-easyinput style="background: white;" disabled :inputBorder="false" type="text" v-model="registerSt" placeholder="請選擇所屬社團分會" />
+								</picker>
+							</view> -->
 							<uni-forms-item class="registerFormItem" :required="true" :label="registerOrg_id==47?'相關社團':'社團分會'" name="server_fh_id">
 								<picker @change="bindPickerChange" style="margin-left: -15rpx;" :value="serviceIndex" :range="serviceNameArr">
 									<uni-easyinput style="background: white;" class="disabledPicker" disabled :inputBorder="false" type="text" v-model="registerSt" :placeholder="parseFloat(registerOrg_id) == 47?'請選擇相關社團':'請選擇社團分會'" />
@@ -24,18 +35,31 @@
 							</uni-forms-item>
 							<uni-forms-item v-if="item.type == '基本信息'" class="registerFormItem" :required="item.isRequired==1?true:false" :label="item.nameZh" :name="item.nameEn" v-for="(item,index) in registerItems" :key="index">
 								<uni-data-checkbox v-if="item.nameEn == 'gender'" v-model="registerParams[item.nameEn]" :localdata="JSON.parse(item.selectContent)" ></uni-data-checkbox>
-								<view v-else-if="item.dateType" style="position: relative;">
-									<picker mode="date" :fields="item.dateType.indexOf('DD') != -1 ? 'day' : 'month'" style="margin-left: -15rpx;" @change="dateChange($event,item.nameEn)">
-											<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" :value="registerParams[item.nameEn]" :placeholder="item.dateType" />
+								<view v-else-if="item.nameEn == 'birthday_str' && registerOrg_id!=50" style="position: relative;">
+									<picker mode="date" fields="month" style="margin-left: -15rpx;" @change="birthdayChange">
+											<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="birthday_strShow" placeholder="YYYY-MM" />
+											<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
+									</picker>
+								</view>
+								<view v-else-if="item.nameEn == 'birthday_str' && registerOrg_id==50" style="position: relative;">
+									<picker mode="date" fields="day" style="margin-left: -15rpx;" @change="birthdayChange">
+											<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="birthday_strShow" placeholder="YYYY-MM-DD" />
+											<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
+									</picker>
+								</view>
+								<view v-else-if="item.nameEn == 'arrive_date'" style="position: relative;">
+									<picker mode="date" fields="month" style="margin-left: -15rpx;" @change="arriveChange">
+											<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="arrive_dateShow" placeholder="YYYY-MM" />
 											<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
 									</picker>
 								</view>
 								<view v-else-if="item.nameEn == 'native_place'" style="position: relative;">
-									<pickerAddress :areas="nativeAreas" v-model="addressShow" @confirm="addresspick" />
-									<view @click="addressShow = true" style="margin-left: -15rpx;">
+									<!-- <uni-data-picker class="nativeBox" placeholder="請選擇籍貫" popup-title="請選擇籍貫" :localdata="nativePlaceData" @nodeclick="onnodeclick" @change="onchange" ></uni-data-picker> -->
+
+									<picker @change="pickerChange" style="margin-left: -15rpx;" @columnchange="columnchange" :range="addArrAll" range-key="name" mode="multiSelector">
 										<uni-easyinput :clearable="false" disabled :inputBorder="false" type="text" v-model="native_placeShow" placeholder="請選擇籍貫" />
 										<text style="position: absolute;right: 10rpx;top: -10rpx;color: #499CF9;">選擇</text>
-									</view>
+									</picker>
 								</view>
 								<uni-easyinput v-else-if="item.nameEn == 'mobile'" trim="both" :inputBorder="false" :clearable="false" type="text" v-model="registerParams['mobile']" :placeholder="'請輸入'+item.nameZh" />
 								<uni-easyinput v-else trim="both" :inputBorder="false" :clearable="false" type="text" v-model="registerParams[item.nameEn]" :placeholder="'請輸入'+item.nameZh" />
@@ -123,14 +147,14 @@
 								<view v-else-if="item.nameEn == 'state'">
 									<radio-group>
 											<label>
-													<view style="font-size: 26rpx;">
+													<view>
 															<radio color="#1aa5fd" style="transform:scale(0.7)" value="1" :checked="stateType == 1" />
 															<text style="display: inline-block;vertical-align: middle;">是（請列明選區）</text>
-															<uni-easyinput style="display: inline-block;vertical-align: middle;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams['xq']" />
+															<uni-easyinput style="display: inline-block;position: relative;top: 16rpx;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams['xq']" />
 													</view>
 											</label>
 											<label>
-													<view style="font-size: 26rpx;">
+													<view>
 															<radio color="#1aa5fd" style="transform:scale(0.7)" value="0" :checked="stateType == 0" />
 															<text>否</text>
 													</view>
@@ -140,14 +164,14 @@
 								<view v-else-if="item.nameEn == 'is_sector'">
 									<radio-group>
 											<label>
-													<view style="font-size: 26rpx;">
+													<view>
 															<radio color="#1aa5fd" style="transform:scale(0.7)" value="1" :checked="isSectorType == 1" />
 															<text style="display: inline-block;vertical-align: middle;">是（請列明界別）</text>
-															<uni-easyinput style="display: inline-block;vertical-align: middle;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams['record_sector']" />
+															<uni-easyinput style="display: inline-block;position: relative;top: 16rpx;" :clearable="false" :inputBorder="false" type="text" v-model="registerParams['record_sector']" />
 													</view>
 											</label>
 											<label>
-													<view style="font-size: 26rpx;">
+													<view>
 															<radio color="#1aa5fd" style="transform:scale(0.7)" value="0" :checked="isSectorType == 0" />
 															<text>否</text>
 													</view>
@@ -266,10 +290,7 @@ import { mapMutations } from 'vuex';
 import { registerByPass, smsCode,getRegister,serviceList,register,getNative,getHometownDict } from '@/api/login';
 import moment from '@/common/moment';
 import htzSignature from '@/components/htz-signature/htz-signature.vue'
-
-import pickerAddress from '@/components/liudx-pickerAddress/index.vue'
-
-//import AllAddress from './AddressData.js';
+import AllAddress from './AddressData.js';
 import rIcon1 from "./icon/register_1.png";
 import rIcon2 from "./icon/register_2.png";
 import rIcon3 from "./icon/register_3.png";
@@ -358,20 +379,10 @@ export default {
 			userInfo: this.$mStore.getters.userObj,
 			isUploadIds: false,
 			nativePlaceData: [],
-			AllAddress: [],
-			addressShow: false,
-			form: {
-					province: '',
-					city: '',
-					area: '',
-			},
-			address: '',
-			nativeAreas: true
 		};
 	},
 	components: {
-		htzSignature,
-		pickerAddress
+		htzSignature
 	},
 	onShow() {
 
@@ -419,14 +430,10 @@ export default {
 		this.NowLogo = orgLogo;
 		this.registerMobile = this.userInfo.mobile;
 
+		this.initAddress();
 		this.getRegisterFn();
 
-		//this.getHometownFn();
-		if(this.registerOrg_id == 50) {
-			this.nativeAreas = false;
-		} else {
-			this.nativeAreas = true;
-		}
+		this.getHometownFn();
 
 		this.professional_sectorArr = [];
 		this.professionalArr.forEach((item)=>{
@@ -447,23 +454,6 @@ export default {
 
 	},
 	methods: {
-		addresspick(obj) {
-				if(this.nativeAreas) {
-					var arr = [ 'province', 'city', 'area'];
-				} else {
-					var arr = [ 'province', 'city'];
-				}
-				let place = '';
-				arr.map(key => {
-						if(key == "province") {
-							place += obj[key].namec
-						} else {
-							place += "-" + obj[key].namec
-						}
-				})
-				this.native_placeShow = place;
-				this.$forceUpdate();
-		},
 		getHometownFn() {
 			this.$http.post(getHometownDict,{"level": 1}).then((res)=>{
 				var newArr = [];
@@ -473,20 +463,17 @@ export default {
 						res_.data.forEach((item_)=>{
 							children.push({
 								value: item_.namec,
-								name: item_.namec,
-								children: []
+								text: item_.namec,
 							})
 						});
 					});
 					newArr.push({
 						value: item.namec,
-						name: item.namec,
+						text: item.namec,
 						children: children
 					})
 				})
 				this.nativePlaceData = newArr;
-				this.AllAddress = newArr;
-				this.initAddress();
 				this.$forceUpdate();
 			});
 		},
@@ -597,14 +584,10 @@ export default {
 			}
 		},
 		initAddress() {
-			if(this.registerOrg_id == 50) {
-				this.addArrAll = new Array(2);
-			} else {
-				this.addArrAll = new Array(3);
-			}
+			this.addArrAll = new Array(3);
 			for(let i = 0; i<this.addArrAll.length;i++){
 				if(i==0){
-					this.addArrAll[i] = this.AllAddress
+					this.addArrAll[i] = AllAddress
 				} else {
 					this.addArrAll[i] = [];
 					if (this.addArrAll[i-1][0].children != null) {
@@ -612,18 +595,18 @@ export default {
 					}
 				}
 			}
+			console.log(this.addArrAll);
 			this.$forceUpdate()
 		},
 		columnchange(e) {
 			let aIndex = JSON.parse(JSON.stringify(e.detail.column+1));//第几组
-			console.log(this.addArrAll);
 			let j = e.detail.value;//索引值
 			for(let i=aIndex; i<this.addArrAll.length; i++){
 				this.addArrAll[i] = [];
 				 if(e.detail.column === 0 && i===2){
-					if (this.addArrAll[i-1][0].children) {
+					 if (this.addArrAll[i-1][0].children != null) {
 					 	this.addArrAll[i] = this.addArrAll[i-1][0].children;
-					}
+					 }
 				 }else{
 					 if (this.addArrAll[i-1][j].children != null) {
 					 	this.addArrAll[i] = this.addArrAll[i-1][j].children;
@@ -799,9 +782,19 @@ export default {
 			content.draw(true);
 			this.registerParams.sign = "";
 		},
-		dateChange(val,name) {
-				this.registerParams[name] = val.detail.value;
-				this.$forceUpdate();
+		/* bindPickerChange(e) {
+			this.serviceIndex = e.target.value;
+			this.registerParams.service_center_id = this.serviceArr[parseFloat(e.target.value)].name;
+		}, */
+		birthdayChange(val) {
+			this.birthday_strShow = val.detail.value;
+			this.registerParams["birthday_str"] = val.detail.value;
+			this.$forceUpdate();
+		},
+		arriveChange(val) {
+			this.arrive_dateShow = val.detail.value;
+			this.registerParams["arrive_date"] = val.detail.value;
+			this.$forceUpdate();
 		},
 		IsHKID(str) {
 			if(str == "" || str == null || str == undefined) {
@@ -1136,6 +1129,7 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+
 	.registerOrgName{
 		display: inline-block;
 		width: calc(100% - 280rpx);
@@ -1230,8 +1224,8 @@ export default {
 	}
 	.collapseBox{
 		display: block;
-		width: 94vw;
-		margin: 0 3vw;
+		width: 94%;
+		margin-left: 3%;
 		.collapseContent{
 
 		}
@@ -1263,20 +1257,20 @@ export default {
 	}
 	.registerForm{
 		display: block;
-		padding: 10rpx 22rpx 0 !important;
+		width: calc(100% - 44rpx);
+		padding: 10rpx 22rpx 0;
 		margin-top: 30rpx 0;
-		/* view{
+		view{
 			display: block;
 			width: 100%;
 			padding: 0;
 			margin: 0;
-		} */
+		}
 		.is-disabled{
 			background: none !important;
 			background-color: none !important;
 		}
 		.registerFormItem{
-			width: 100%;
 			input{
 				border-bottom: 1px solid #dedede;
 			}
