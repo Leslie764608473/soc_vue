@@ -33,114 +33,121 @@
 				<image :src="shareBg"></image>
 			</view>
 		</view>
-		<view class="bottomTitle">到底啦~</view>
+		<!-- 评论组件 -->
+		<comment :commentDataNew="commentData" :productId="product.id"/>
+		<!-- <view class="bottomTitle">到底啦~</view> -->
 		<view class="bottomBtns">
 			<view @click="copyFn()" class="fristBox"><i class="iconfont icon-icon-" style="color: #0f7df7;"></i>複製鏈接</view>
-			<button class="share-btn" open-type="share">
+			<!-- <button class="share-btn" open-type="share">
 				<i class="iconfont icon-fenxiang-weixin" style="color: #28c445;"></i>分享給好友
-			</button>
+			</button> -->
 			<!-- <view class="share-btn" open-type="share" @click="share()"><i class="iconfont icon-fenxiang-weixin" style="color: #28c445;"></i>分享給好友</view> -->
 		</view>
 
 	</view>
 </template>
 <script>
-	import moment from '@/common/moment';
-	import mpHtml from '@/components/mp-html/mp-html'
-  export default {
-    name: 'rfProductDetail',
-    props: {
-			product: {
-				type: Object,
-				default() {
-					return {
-					};
-				}
-			},
-			userInfo: {
-				type: Object,
-				default() {
-					return {};
-				}
-			},
-			url: {
-				type: String,
-				default: ''
-			},
-			marketType: {
-				type: String,
-				default: 'buy_now'
-			}
+import moment from '@/common/moment'
+import mpHtml from '@/components/mp-html/mp-html'
+import comment from '@/components/comment/index'
+// 评论假数据
+import commentData from './comment.js'
+export default {
+  name: 'rfProductDetail',
+  props: {
+    product: {
+      type: Object,
+      default () {
+        return {
+        }
+      }
     },
-		components: {
-			mpHtml
-		},
-		async onShareAppMessage () {
+    userInfo: {
+      type: Object,
+      default () {
+        return {}
+      }
+    },
+    url: {
+      type: String,
+      default: ''
+    },
+    marketType: {
+      type: String,
+      default: 'buy_now'
+    }
+  },
+  components: {
+    mpHtml,
+    comment
+  },
+  async onShareAppMessage () {
 		  // #ifdef MP
 
 		  // #endif
-		},
-		data() {
-			return {
-				shareBg: this.$mAssetsPath.shareBg,
-				shareClass: "none"
-			};
-		},
-		async onShareAppMessage () {
+  },
+  data () {
+    return {
+      commentData: commentData.items,
+      shareBg: this.$mAssetsPath.shareBg,
+      shareClass: 'none'
+    }
+  },
+  async onShareAppMessage () {
 
-		},
-		filters: {
-			time(val) {
-				return moment(val).format('YYYY-MM-DD HH:mm');
-			}
-		},
-		onLoad(options) {
-			let orgId = options.orgId;
-			if(orgId && orgId != this.$mStore.getters.orgId) {
-				this.$mStore.commit('setOrgId',orgId);
-			}
-		},
-		computed: {
+  },
+  filters: {
+    time (val) {
+      return moment(val).format('YYYY-MM-DD HH:mm')
+    }
+  },
+  onLoad (options) {
+    const orgId = options.orgId
+    if (orgId && orgId != this.$mStore.getters.orgId) {
+      this.$mStore.commit('setOrgId', orgId)
+    }
+  },
+  computed: {
 
-		},
-		created() {
+  },
+  created () {
 
-		},
-    methods: {
-			copyFn() {
-				uni.setClipboardData({
-						data: "http://app.link-heart.hk/#/pages/product/article?id="+this.product.id,
-						success: function (res) {
-								/* uni.showToast({
+  },
+  methods: {
+    copyFn () {
+      uni.setClipboardData({
+        data: 'http://app.link-heart.hk/#/pages/product/article?id=' + this.product.id,
+        success: function (res) {
+          /* uni.showToast({
 										title: '複製成功',
 								}); */
-						},
-						fail:function (res) {
-								/* uni.showToast({
+        },
+        fail: function (res) {
+          /* uni.showToast({
 										title: '複製失敗',
 								}); */
-						}
-				});
-			},
-			share() {
+        }
+      })
+    },
+    share () {
 			  // #ifdef H5
 			  if (this.$mPayment.isWechat()) {
-			    this.shareClass = 'show';
+			    this.shareClass = 'show'
 			  } else {
-			    this.$mHelper.h5Copy(this.url);
+			    this.$mHelper.h5Copy(this.url)
 			  }
 			  // #endif
 			  // #ifdef APP-PLUS
-				this.$mHelper.handleAppShare(this.url, this.appName, this.product.name, this.product.picture);
-				// #endif
-			},
+      this.$mHelper.handleAppShare(this.url, this.appName, this.product.name, this.product.picture)
+      // #endif
     }
-  };
+  }
+}
 </script>
 <style lang="scss" scoped>
 	.bottomTitle{
 		color: #d9d9d9;
-		border-top: 1px solid #d9d9d9;
+		// border-top: 1px solid #d9d9d9;
 		width: 80vw;
 		display: block;
 		margin: 0 auto;

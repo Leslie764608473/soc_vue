@@ -36,7 +36,7 @@ http.interceptor.request(
 		} else {
 			config.header['Authorization'] = uni.getStorageSync('accessToken');
 		}
-
+		config.header['Authorization-soc'] = uni.getStorageSync('accessToken');
 		//config.header['Authorization'] = uni.getStorageSync('accessToken');
 		// 单商户
 		// config.header['merchant-id'] = uni.getStorageSync('merchantId') || 1;
